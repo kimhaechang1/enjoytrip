@@ -4,6 +4,8 @@ import axios from "axios";
 import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import { useRouter } from "vue-router";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
+import { menuStore } from "../stores/menuStore";
+import { localAxios } from "../util/localAxios.js";
 
 const userInfo = ref({
   userId: "",
@@ -12,22 +14,31 @@ const userInfo = ref({
 
 const router = useRouter();
 const store = useUserInfoStore();
-
+const mStore = menuStore();
+const fetcher = localAxios;
 const msg = ref("");
-
-const URL = "http://localhost/vue/";
-
+const URL = "http://192.168.0.2/vue";
 const clickEvent = () => {
+  // fetcher
+  //   .post("/user/login", JSON.stringify(userInfo.value), {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   })
+  //   .then((res) => {
+  //     store.loginProcess(res.data["access-token"]);
+  //     mStore.changeMenuState(false);
+  //     //router.go(-1);
+  //   });
   axios
-    .post(URL + "user/login", JSON.stringify(userInfo.value), {
+    .post(URL + "/user/login", JSON.stringify(userInfo.value), {
       headers: {
         "Content-Type": "application/json",
       },
     })
     .then((res) => {
-      console.log(res.data);
-      store.loginProcess(res.data["access-token"], res.data["refresh-token"]);
-      console.log(store.isLogin);
+      store.loginProcess(res.data["access-token"]);
+      mStore.changeMenuState(false);
       router.go(-1);
     })
     .catch((err) => {
@@ -37,45 +48,43 @@ const clickEvent = () => {
 };
 
 const test = () => {
-  axios
-    .get(URL + `user/info/ssafy`, {
-      headers: {
-        Authorization:
-          "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyZWZyZXNoLXRva2VuIiwiaWF0IjoxNzAwMTQyODkyLCJleHAiOjE3MDI3MzQ4OTIsInVzZXJJZCI6InNzYWZ5In0.n2qkOtN-gfd3qvDdVtQxvgITgV_YBvwWyD27c9ySJEA",
-      },
-    })
-    .then((res) => console.log(res));
+  store.isLoginCheck();
 };
 </script>
 
 <template>
-  <div class="loginLayout">
-    <h1>로그인 페이지입니다.</h1>
-    <div v-if="msg" class="msgBos">
-      <div>{{ msg }}</div>
-    </div>
+  <v-app id="inspire">
+    <v-main class="blue-grey lighten-4">
+      <!-- Login Component -->
+      <v-container style="max-width: 450px">
+        <v-card title="로그인" :text="msg" variant="outlined">
+          <v-col class="">
+            <v-col>
+              <v-text-field
+                v-model="userInfo.userId"
+                label="아이디"
+                required
+                hide-details
+              ></v-text-field>
+            </v-col>
 
-    <div>
-      <div>
-        <input
-          type="text"
-          v-model="userInfo.userId"
-          placeholder="아이디 입력"
-        />
-      </div>
-      <div>
-        <input
-          type="password"
-          v-model="userInfo.userPwd"
-          placeholder="패스워드 입력"
-        />
-      </div>
-      <div>
-        <button @click="clickEvent">로그인 하기</button>
-        <button @click="test">테스트용</button>
-      </div>
-    </div>
-  </div>
+            <v-col>
+              <v-text-field
+                v-model="userInfo.userPwd"
+                label="비밀번호"
+                type="password"
+                hide-details
+                required
+              ></v-text-field>
+            </v-col>
+          </v-col>
+          <v-card-actions>
+            <v-btn @click="clickEvent">로그인하기</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <style scoped>
