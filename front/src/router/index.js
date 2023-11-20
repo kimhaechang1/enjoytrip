@@ -83,6 +83,11 @@ const router = createRouter({
           name: "board-list",
           component: () => import("../components/BoardList.vue"),
         },
+        {
+          path: ":articleNo",
+          name: "board-view",
+          component: () => import("../components/BoardView.vue"),
+        },
       ],
     },
   ],

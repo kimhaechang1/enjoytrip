@@ -23,7 +23,7 @@ const URL = {
 };
 const clickEvent = () => {
   axios
-    .post(URL[3] + "/user/login", JSON.stringify(userInfo.value), {
+    .post(URL[1] + "/user/login", JSON.stringify(userInfo.value), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -70,7 +70,12 @@ const clickEvent = () => {
           </v-col>
           <v-col>
             <v-col>
-              <v-btn @click="clickEvent" variant="outlined" class="md-6" block size="large"
+              <v-btn
+                @click="clickEvent"
+                variant="outlined"
+                class="md-6"
+                block
+                size="large"
                 >로그인 하기</v-btn
               >
               <!--<v-btn @click="joinEvent">회원가입 하기</v-btn>-->

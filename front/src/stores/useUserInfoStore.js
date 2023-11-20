@@ -4,8 +4,8 @@ import axios from "axios";
 
 export const useUserInfoStore = defineStore("userInfo", () => {
   const URL = {
-    1: "http://192.168.0.2/vue",
-    2: "http://localhost/vue",
+    1: "http://localhost/vue",
+    2: "http://192.168.0.2/vue",
     3: "http://192.168.31.75/vue",
   };
   const isLoginCheck = async () => {
@@ -26,17 +26,26 @@ export const useUserInfoStore = defineStore("userInfo", () => {
     return decoded.userId;
   };
 
+  const getUserId = async () => {
+    if (!localStorage.accessToken) return "";
+    const token = localStorage.accessToken;
+    const chkRes = await _accessTokenCheck(token);
+    if (!chkRes) return "";
+    return decodedToken(token);
+  };
+
   const _accessTokenCheck = async (userId) => {
     if (!localStorage.accessToken) return false;
     let accessToken = localStorage.accessToken;
     try {
-      await axios.get(`${URL[3]}/user/info/${userId}`, {
+      await axios.get(`${URL[2]}/user/info/${userId}`, {
         headers: {
           Authorization: accessToken,
         },
       });
     } catch (err) {
       if (err.response.status === 401) {
+        localStorage.removeItem("accessToken");
         return false;
       }
     }
@@ -51,5 +60,6 @@ export const useUserInfoStore = defineStore("userInfo", () => {
     loginProcess,
     decodedToken,
     isLoginCheck,
+    getUserId,
   };
 });

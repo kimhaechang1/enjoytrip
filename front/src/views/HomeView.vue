@@ -3,12 +3,13 @@ console.log("fdsafafafdsfasfsa");
 import axios from "axios";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
 import { onMounted, ref, computed, watch } from "vue";
-
+import { useRouter } from "vue-router";
 const URL = {
   1: "http://192.168.0.2/vue",
   2: "http://localhost/vue",
   3: "http://192.168.31.75/vue",
 };
+const router = useRouter();
 const store = useUserInfoStore();
 const sidoList = ref([]);
 const selectedSido = ref({
@@ -24,7 +25,7 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      // axios.get(`${URL[1]}/attr/gugun/${sidoCode}`)
+      // axios.get(`${URL[2]}/attr/gugun/${sidoCode}`)
       // .then((res)=>{
       //   gugunList.value = res.data.resultData
       // })
@@ -82,27 +83,27 @@ onMounted(() => {
       },
     ],
   };
-  // axios.get(`${URL[1]}/attr/sido`)
+  // axios.get(`${URL[2]}/attr/sido`)
   // .then((res)=>{
   //   sidoList.value = res.data.resultData
   // })
 
-  // axios.get(`${URL[1]}/attr/count`)
+  // axios.get(`${URL[2]}/attr/count`)
   // .then((res)=>{
   //   attrCount.value = parseInt(res.data.resultData.count)
   // })
 
-  // axios.get(`${URL[1]}/plan/count`)
+  // axios.get(`${URL[2]}/plan/count`)
   // .then((res)=>{
   //   planCount.value = parseInt(res.data.resultData.count)
   // })
 
-  // axios.get(`${URL[1]}/board/count`)
+  // axios.get(`${URL[2]}/board/count`)
   // .then((res)=>{
   //   boardCount.value = parseInt(res.data.resultData.count)
   // })
 
-  // axios.get(`${URL[1]}/search/rank`)
+  // axios.get(`${URL[2]}/search/rank`)
   // .then((res)=>{
   //   searchRank.value = res.data.resultData
   // })
@@ -116,10 +117,14 @@ const submitEvent = () => {
 
   const searchData = {
     sidoCode: selectedSido.value.sidoCode,
-    gugunCode: selectedGugun.value.gugunCode == 0 ? "" : selectedGugun.value.gugunCode,
+    gugunCode:
+      selectedGugun.value.gugunCode == 0 ? "" : selectedGugun.value.gugunCode,
     word: word.value,
   };
   console.log(searchData);
+};
+const goBoardEvent = () => {
+  router.push({ name: "board" });
 };
 </script>
 
@@ -151,7 +156,12 @@ const submitEvent = () => {
             variant="outlined"
             :disabled="isSelected"
           ></v-select>
-          <v-text-field clearable label="검색어" variant="outlined" v-model="word"></v-text-field>
+          <v-text-field
+            clearable
+            label="검색어"
+            variant="outlined"
+            v-model="word"
+          ></v-text-field>
           <button class="submit-btn" @click="submitEvent">검색</button>
         </div>
       </div>
@@ -183,7 +193,10 @@ const submitEvent = () => {
         <div class="carditem">
           <div class="carditem-title">
             전체 플레너 수
-            <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square" />
+            <font-awesome-icon
+              icon="fa-solid fa-arrow-up-right-from-square"
+              @click="goBoardEvent"
+            />
           </div>
           <div class="carditem-body">
             <vue3-autocounter
@@ -200,7 +213,11 @@ const submitEvent = () => {
         <div class="carditem">
           <div class="carditem-title">
             전체 게시글 개수
-            <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square" />
+            <font-awesome-icon
+              icon="fa-solid fa-arrow-up-right-from-square"
+              @click="goBoardEvent"
+              style="cursor: pointer"
+            />
           </div>
           <div class="carditem-body">
             <vue3-autocounter
