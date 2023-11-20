@@ -15,23 +15,15 @@ const userInfo = ref({
 const router = useRouter();
 const store = useUserInfoStore();
 const mStore = menuStore();
-const fetcher = localAxios;
 const msg = ref("");
-const URL = "http://192.168.0.2/vue";
+const URL = {
+  1: "http://192.168.0.2/vue",
+  2: "http://localhost/vue",
+  3: "http://192.168.31.75/vue",
+};
 const clickEvent = () => {
-  // fetcher
-  //   .post("/user/login", JSON.stringify(userInfo.value), {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //   })
-  //   .then((res) => {
-  //     store.loginProcess(res.data["access-token"]);
-  //     mStore.changeMenuState(false);
-  //     //router.go(-1);
-  //   });
   axios
-    .post(URL + "/user/login", JSON.stringify(userInfo.value), {
+    .post(URL[3] + "/user/login", JSON.stringify(userInfo.value), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -46,24 +38,21 @@ const clickEvent = () => {
       msg.value = err.response.data.message;
     });
 };
-
-const test = () => {
-  store.isLoginCheck();
-};
 </script>
 
 <template>
   <v-app id="inspire">
     <v-main class="blue-grey lighten-4">
       <!-- Login Component -->
-      <v-container style="max-width: 450px">
-        <v-card title="로그인" :text="msg" variant="outlined">
+      <v-container class="loginComplayout">
+        <v-card class="loginComp" title="로그인" :text="msg" variant="outlined">
           <v-col class="">
             <v-col>
               <v-text-field
                 v-model="userInfo.userId"
                 label="아이디"
                 required
+                variant="outlined"
                 hide-details
               ></v-text-field>
             </v-col>
@@ -74,13 +63,19 @@ const test = () => {
                 label="비밀번호"
                 type="password"
                 hide-details
+                variant="outlined"
                 required
               ></v-text-field>
             </v-col>
           </v-col>
-          <v-card-actions>
-            <v-btn @click="clickEvent">로그인하기</v-btn>
-          </v-card-actions>
+          <v-col>
+            <v-col>
+              <v-btn @click="clickEvent" variant="outlined" class="md-6" block size="large"
+                >로그인 하기</v-btn
+              >
+              <!--<v-btn @click="joinEvent">회원가입 하기</v-btn>-->
+            </v-col>
+          </v-col>
         </v-card>
       </v-container>
     </v-main>
@@ -98,5 +93,14 @@ const test = () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.loginComplayout {
+  display: flex;
+  height: 80%;
+  align-items: center;
+  justify-content: center;
+}
+.loginComp {
+  min-width: 450px;
 }
 </style>

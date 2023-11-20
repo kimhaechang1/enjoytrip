@@ -16,7 +16,6 @@ export const menuStore = defineStore(
     ];
 
     const changeMenuState = (isLogin) => {
-      const resList = [];
       if (isLogin) {
         menuList.value = login;
       } else {

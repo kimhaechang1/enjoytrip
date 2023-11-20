@@ -4,7 +4,11 @@ import axios from "axios";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
 import { onMounted, ref, computed, watch } from "vue";
 
-const URL = { 1: "http://192.168.0.2/vue", 2: "http://localhost/vue" };
+const URL = {
+  1: "http://192.168.0.2/vue",
+  2: "http://localhost/vue",
+  3: "http://192.168.31.75/vue",
+};
 const store = useUserInfoStore();
 const sidoList = ref([]);
 const selectedSido = ref({
@@ -112,8 +116,7 @@ const submitEvent = () => {
 
   const searchData = {
     sidoCode: selectedSido.value.sidoCode,
-    gugunCode:
-      selectedGugun.value.gugunCode == 0 ? "" : selectedGugun.value.gugunCode,
+    gugunCode: selectedGugun.value.gugunCode == 0 ? "" : selectedGugun.value.gugunCode,
     word: word.value,
   };
   console.log(searchData);
@@ -148,13 +151,8 @@ const submitEvent = () => {
             variant="outlined"
             :disabled="isSelected"
           ></v-select>
-          <v-text-field
-            clearable
-            label="검색어"
-            variant="outlined"
-            v-model="word"
-          ></v-text-field>
-          <button class="submit-btn" @click="submitEvent">제출</button>
+          <v-text-field clearable label="검색어" variant="outlined" v-model="word"></v-text-field>
+          <button class="submit-btn" @click="submitEvent">검색</button>
         </div>
       </div>
     </div>

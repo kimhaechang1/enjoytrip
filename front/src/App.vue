@@ -101,3 +101,8 @@ body {
   height: 100%;
 }
 </style>
+<style>
+.pointer {
+  cursor: pointer;
+}
+</style>

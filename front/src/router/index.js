@@ -75,7 +75,7 @@ const router = createRouter({
       component: BoardView,
       redirect: {
         name: "board-list",
-        query: { pgno: 1, spp: 20, key: "", word: "", cate: "" },
+        query: { pgno: 1, spp: 10, key: "", word: "", cate: "1" },
       },
       children: [
         {

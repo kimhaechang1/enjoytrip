@@ -3,7 +3,11 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 export const useUserInfoStore = defineStore("userInfo", () => {
-  const URL = { 1: "http://192.168.0.2/vue", 2: "http://localhost/vue" };
+  const URL = {
+    1: "http://192.168.0.2/vue",
+    2: "http://localhost/vue",
+    3: "http://192.168.31.75/vue",
+  };
   const isLoginCheck = async () => {
     const token = localStorage.accessToken;
     console.log(token);
@@ -26,7 +30,7 @@ export const useUserInfoStore = defineStore("userInfo", () => {
     if (!localStorage.accessToken) return false;
     let accessToken = localStorage.accessToken;
     try {
-      const res = await axios.get(`${URL[1]}/user/info/${userId}`, {
+      await axios.get(`${URL[3]}/user/info/${userId}`, {
         headers: {
           Authorization: accessToken,
         },

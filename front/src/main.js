@@ -6,19 +6,33 @@ import Vue3Autocounter from "vue3-autocounter";
 /* import font awesome icon component */
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
 import App from "./App.vue";
 import router from "./router";
 
 import "vuetify/styles";
 import { createVuetify } from "vuetify";
+import { aliases, mdi } from "vuetify/iconsets/mdi";
+import "@mdi/font/css/materialdesignicons.css";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
-
+import * as labsComponents from "vuetify/labs/components";
 const app = createApp(App);
 library.add(faArrowUpRightFromSquare);
+console.log("aliases", aliases);
+console.log("mdi", mdi);
+
 const vuetify = createVuetify({
   components,
   directives,
+  labsComponents,
+  icons: {
+    defaultSet: "mdi",
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
 });
 
 app.use(createPinia().use(piniaPluginPersistedstate));
