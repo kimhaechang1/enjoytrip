@@ -1,9 +1,13 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
 import { toStringByFormatting } from "../util/dateFormat.js";
+import ChildCommentWrite from "./ChildCommentWrite.vue";
+import Comment from "./Comment.vue";
 import axios from "axios";
+// dummy data import
+import article from "./Article.json";
 
 const route = useRoute();
 const router = useRouter();
@@ -25,63 +29,109 @@ const data = ref({
   link: "",
 });
 
-const presentUser = ref("");
+const presentUser = ref("ssafy4");
 const isUtilOpen = ref(false);
 
 const query = ref({});
 const plannerDetail = ref({});
+const writeComment = ref("");
+
+const commentList = ref([]);
+
+const serverSideCommentList = ref([]);
+
 onMounted(async () => {
   const id = route.params.articleNo;
-  try {
-    const res = await axios.get(`${URL[3]}/board/${id}`);
-    const { articleNo, category, content, date, hit, subject, userId, userName, plannerId } =
-      res.data;
-    let newObj = {};
+  // dummy data preprocess
+  const {
+    articleNo,
+    category,
+    content,
+    date,
+    hit,
+    subject,
+    userId,
+    userName,
+    plannerId,
+    comment,
+  } = article;
+  let newObj = {};
 
-    newObj = {
-      articleNo,
-      content,
-      date: toStringByFormatting(new Date(date)),
-      hit,
-      subject,
-      userId,
-      userName,
-    };
-    console.log("category : " + category);
-    if (category == 0) {
-      newObj.category = "공지사항";
-    } else if (category == 1) {
-      newObj.category = "자유";
-    } else if (category == 2) {
-      newObj.category = "후기";
-      const res = await axios.get(`${URL[3]}/plan/${plannerId}`);
-      if (res.data.resultData) {
-        plannerDetail.value = res.data.resultData;
-      }
-    }
-    data.value = newObj;
-    console.log(newObj);
-    console.log(data.value);
-  } catch (err) {
-    console.log(err);
-    if (err.response.status == 404) {
-      alert("해당하는 페이지를 찾을 수 없습니다.");
-      router.go(-1);
-    }
-  }
-  const userId = await userStore.getUserId();
-  presentUser.value = userId;
-  console.log(data.value.category);
-  console.log(presentUser.value);
-  if (data.value.category === "공지사항") {
-    if (presentUser.value === "admin") {
-      isUtilOpen.value = true;
-    }
-  } else {
-    if (presentUser.value === data.value.userId) {
-      isUtilOpen.value = true;
-    }
-  }
+  newObj = {
+    articleNo,
+    content,
+    date: toStringByFormatting(new Date(date)),
+    hit,
+    subject,
+    userId,
+    userName,
+  };
+  newObj.category = "자유";
+  console.log("category : " + category);
+  data.value = newObj;
+  serverSideCommentList.value = comment;
+  makeCommentList();
+  console.log(commentList.value);
+  // try {
+  //   const res = await axios.get(`${URL[2]}/board/${id}`);
+
+  //   const {
+  //     articleNo,
+  //     category,
+  //     content,
+  //     date,
+  //     hit,
+  //     subject,
+  //     userId,
+  //     userName,
+  //     plannerId,
+  //   } = res.data;
+  //   let newObj = {};
+
+  //   newObj = {
+  //     articleNo,
+  //     content,
+  //     date: toStringByFormatting(new Date(date)),
+  //     hit,
+  //     subject,
+  //     userId,
+  //     userName,
+  //   };
+  //   console.log("category : " + category);
+  //   if (category == 0) {
+  //     newObj.category = "공지사항";
+  //   } else if (category == 1) {
+  //     newObj.category = "자유";
+  //   } else if (category == 2) {
+  //     newObj.category = "후기";
+  //     const res = await axios.get(`${URL[2]}/plan/${plannerId}`);
+  //     if (res.data.resultData) {
+  //       plannerDetail.value = res.data.resultData;
+  //     }
+  //   }
+  //   data.value = newObj;
+  //   console.log(newObj);
+  //   console.log(data.value);
+  // } catch (err) {
+  //   console.log(err);
+  //   if (err.response.status == 404) {
+  //     alert("해당하는 페이지를 찾을 수 없습니다.");
+  //     router.go(-1);
+  //   }
+  // }
+  // const userId = await userStore.getUserId();
+  // presentUser.value = userId;
+  // console.log(data.value.category);
+  // console.log(presentUser.value);
+  // if (data.value.category === "공지사항") {
+  //   if (presentUser.value === "admin") {
+  //     isUtilOpen.value = true;
+  //   }
+  // } else {
+  //   if (presentUser.value === data.value.userId) {
+  //     isUtilOpen.value = true;
+  //   }
+  // }
 
   let newQuery = {};
   newQuery.pgno = route.query.pgno;
@@ -90,6 +140,48 @@ onMounted(async () => {
   newQuery.word = route.query.word;
   newQuery.cate = route.query.cate;
   query.value = newQuery;
+});
+
+const makeCommentList = () => {
+  let newCommentList = {};
+  let newResultCommentList = [];
+  serverSideCommentList.value.map((comment) => {
+    if (comment.parentId == null) {
+      newCommentList[comment.commentId] = comment;
+    } else {
+      const { commentId, content, userId, parentId, child } =
+        newCommentList[comment.parentId];
+      let newChildList = [];
+      if (child) {
+        newChildList = [...child];
+        newChildList.push(comment);
+        newCommentList[comment.parentId] = {
+          ...newCommentList[comment.parentId],
+          child: newChildList,
+        };
+      } else {
+        newChildList.push(comment);
+        newCommentList[comment.parentId] = {
+          ...newCommentList[comment.parentId],
+          child: newChildList,
+        };
+      }
+    }
+  });
+  console.log(newCommentList);
+  for (const key in newCommentList) {
+    let obj = { ...newCommentList[key] };
+    newResultCommentList.push(obj);
+  }
+  commentList.value = newResultCommentList;
+  console.log(commentList.value);
+};
+
+watch(serverSideCommentList, (newValue) => {
+  console.log("newValue", newValue);
+  serverSideCommentList.value = newValue;
+  makeCommentList();
+  console.log(commentList.value);
 });
 
 const goBackEvent = () => {
@@ -106,7 +198,7 @@ const goBackEvent = () => {
 };
 const deleteEvent = async () => {
   try {
-    const res = await axios.delete(`${URL[3]}/board/${data.value.articleNo}`);
+    const res = await axios.delete(`${URL[2]}/board/${data.value.articleNo}`);
     if (res.status == 200) {
       alert("성공적으로 삭제되었습니다.");
     }
@@ -143,10 +235,96 @@ const updateEvent = () => {
 };
 
 const goMapEvent = () => {};
+
+// template variable for test at comment
+
+const getAllCommentList = () => {
+  // api
+};
+
+const getAllChildCommentList = () => {
+  // api
+};
+
+const addCommentEvent = () => {
+  const lastCommentId =
+    serverSideCommentList.value[serverSideCommentList.value.length - 1]
+      .commentId;
+  let newArray = [...serverSideCommentList.value];
+  let newObj = {
+    commentId: lastCommentId + 1,
+    content: writeComment.value,
+    userId: presentUser,
+    parentId: null,
+  };
+  newArray.push(newObj);
+  serverSideCommentList.value = newArray;
+};
+
+const updateCommentEvent = (newComment) => {
+  console.log("newComment", newComment);
+  let newArray = [];
+  serverSideCommentList.value.map((comment) => {
+    if (comment.commentId == newComment.commentId) {
+      newArray.push({
+        ...comment,
+        content: newComment.content,
+      });
+    } else {
+      newArray.push(comment);
+    }
+  });
+  console.log("newArray", newArray);
+  serverSideCommentList.value = newArray;
+  console.log("serverSideCommentList", serverSideCommentList.value);
+};
+
+const deleteCommentEvent = (delComment) => {
+  serverSideCommentList.value = serverSideCommentList.value.filter(
+    (comment) => {
+      return comment.commentId != delComment.commentId;
+    }
+  );
+};
+
+const addChildCommentEvent = (newComment) => {
+  const lastCommentId =
+    serverSideCommentList.value[serverSideCommentList.value.length - 1]
+      .commentId;
+  let newArray = [...serverSideCommentList.value];
+  let newObj = {
+    ...newComment,
+    commentId: lastCommentId + 1,
+  };
+  newArray.push(newObj);
+  serverSideCommentList.value = newArray;
+};
+
+const updateChildCommentEvent = (newComment) => {
+  let newArray = [];
+  serverSideCommentList.value.map((comment) => {
+    if (comment.commentId == newComment.commentId) {
+      newArray.push({
+        ...comment,
+        content: newComment.content,
+      });
+    } else {
+      newArray.push(comment);
+    }
+  });
+};
+
+const deleteChildCommentEvent = (delComment) => {
+  serverSideCommentList.value = serverSideCommentList.value.filter(
+    (comment) => {
+      return comment.commentId != delComment.commentId;
+    }
+  );
+};
 </script>
 
 <template>
-  <v-container>
+  <v-container class="layout">
     <v-card>
       <div class="view-layout">
         <div>
@@ -178,7 +356,9 @@ const goMapEvent = () => {};
               <div class="view-body-link">
                 <div>제목 : {{ plannerDetail.plannerTitle }}</div>
                 <div>
-                  기간 : {{ toStringByFormatting(new Date(plannerDetail.startDate)) }} ~
+                  기간 :
+                  {{ toStringByFormatting(new Date(plannerDetail.startDate)) }}
+                  ~
                   {{ toStringByFormatting(new Date(plannerDetail.endDate)) }}
                 </div>
                 <div>
@@ -200,10 +380,64 @@ const goMapEvent = () => {};
         </div>
       </div>
     </v-card>
+    <div class="comment-layout">
+      <template v-if="presentUser">
+        <v-card class="comment-write-layout">
+          <div class="comment-inner-layout">
+            <v-textarea
+              :label="presentUser"
+              v-model="writeComment"
+              auto-grow
+              rows="1"
+              variant="underlined"
+            ></v-textarea>
+            <v-tooltip text="제출버튼">
+              <template v-slot:activator="{ props }">
+                <v-icon
+                  class="submit-btn"
+                  v-bind="props"
+                  @click="addCommentEvent"
+                  size="large"
+                  color="blue-darken-2"
+                  icon="mdi-message-text"
+                ></v-icon>
+              </template>
+            </v-tooltip>
+          </div>
+        </v-card>
+      </template>
+    </div>
+    <div>
+      <div class="comment-view-layout">
+        <Comment
+          v-for="(item, index) in commentList"
+          :key="item.commentId"
+          :commentData="item"
+          :loginUser="presentUser"
+          :editable="item.userId == presentUser"
+          @updateComment="updateCommentEvent"
+          @deleteComment="deleteCommentEvent"
+          @addChildComment="addChildCommentEvent"
+          @updateChildComment="updateChildCommentEvent"
+          @deleteChildComment="deleteChildCommentEvent"
+        ></Comment>
+      </div>
+
+      <!-- <div>
+        <template v-if="childCommentToggle">
+          <ChildCommentWrite :parent=""></ChildCommentWrite>
+        </template>
+      </div> -->
+    </div>
   </v-container>
 </template>
 
 <style scoped>
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
 .view-subject {
   font-size: 15pt;
 }
@@ -301,4 +535,29 @@ const goMapEvent = () => {};
 .prev-btn:hover {
   background-color: aliceblue;
 }
+.comment-layout {
+  width: 100%;
+}
+.comment-write-layout {
+  width: 100%;
+}
+.comment-inner-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 0 auto;
+  max-width: 80%;
+  max-height: 80%;
+}
+.submit-btn {
+  cursor: pointer;
+}
+
+.comment-view-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 </style>
+<style></style>

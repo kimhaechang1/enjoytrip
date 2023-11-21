@@ -17,13 +17,13 @@ const store = useUserInfoStore();
 const mStore = menuStore();
 const msg = ref("");
 const URL = {
-  1: "http://192.168.0.2/vue",
-  2: "http://localhost/vue",
+  1: "http://localhost/vue",
+  2: "http://192.168.0.2/vue",
   3: "http://192.168.31.75/vue",
 };
 const clickEvent = () => {
   axios
-    .post(URL[3] + "/user/login", JSON.stringify(userInfo.value), {
+    .post(URL[2] + "/user/login", JSON.stringify(userInfo.value), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -70,7 +70,12 @@ const clickEvent = () => {
           </v-col>
           <v-col>
             <v-col>
-              <v-btn @click="clickEvent" variant="outlined" class="md-6" block size="large"
+              <v-btn
+                @click="clickEvent"
+                variant="outlined"
+                class="md-6"
+                block
+                size="large"
                 >로그인 하기</v-btn
               >
               <!--<v-btn @click="joinEvent">회원가입 하기</v-btn>-->

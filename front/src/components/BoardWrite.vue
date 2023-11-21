@@ -7,6 +7,11 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserInfoStore();
 
+const URL = {
+  1: "http://localhost/vue",
+  2: "http://192.168.0.2/vue",
+  3: "http://192.168.31.75/vue",
+};
 const curArticleNo = ref(0);
 const curUserId = ref("");
 const curSelectedCate = ref({
@@ -33,7 +38,7 @@ watch(
     if (category.value == 2) {
       isOpen.value = true;
       let newLinkList = [];
-      const list = await axios.get(`${URL[3]}/plan/list/${curUserId.value}`);
+      const list = await axios.get(`${URL[2]}/plan/list/${curUserId.value}`);
       list.data.resultData.map((planner) => {
         newLinkList.push({
           value: planner.plannerId,
@@ -60,11 +65,6 @@ onBeforeRouteLeave(() => {
 
 const isOpen = ref(false);
 
-const URL = {
-  1: "http://localhost/vue",
-  2: "http://192.168.0.2/vue",
-  3: "http://192.168.31.75/vue",
-};
 onMounted(async () => {
   let newObj = {};
   let newSelectList = [
@@ -76,9 +76,18 @@ onMounted(async () => {
   newObj.userId = curUserId.value;
   if (route.name == "board-update") {
     curArticleNo.value = route.params.articleNo;
-    const res = await axios.get(`${URL[3]}/board/${curArticleNo.value}`);
-    const { articleNo, category, content, date, hit, subject, userId, userName, plannerId } =
-      res.data;
+    const res = await axios.get(`${URL[2]}/board/${curArticleNo.value}`);
+    const {
+      articleNo,
+      category,
+      content,
+      date,
+      hit,
+      subject,
+      userId,
+      userName,
+      plannerId,
+    } = res.data;
     // {
     //     "articleNo": 92,
     //     "userId": "ssafy4",
@@ -98,7 +107,7 @@ onMounted(async () => {
       newObj.plannerId = plannerId;
       console.log(plannerId);
       name = "후기";
-      const res = await axios.get(`${URL[3]}/plan/${newObj.plannerId}`);
+      const res = await axios.get(`${URL[2]}/plan/${newObj.plannerId}`);
       console.log(res.data.resultData);
       curSelectedLink.value = {
         title: res.data.resultData.plannerTitle,
@@ -160,7 +169,7 @@ const submitEvent = () => {
 
   if (route.name === "board-update") {
     try {
-      const res = axios.put(`${URL[3]}/board`, JSON.stringify(obj), {
+      const res = axios.put(`${URL[2]}/board`, JSON.stringify(obj), {
         headers: {
           "Content-type": "application/json",
         },
@@ -174,7 +183,7 @@ const submitEvent = () => {
     }
   } else {
     try {
-      const res = axios.post(`${URL[3]}/board`, JSON.stringify(obj), {
+      const res = axios.post(`${URL[2]}/board`, JSON.stringify(obj), {
         headers: {
           "Content-type": "application/json",
         },
@@ -229,7 +238,12 @@ const submitEvent = () => {
         </template>
       </div>
       <div class="write-layout-body">
-        <v-textarea clearable label="내용" v-model="data.content" variant="outlined"></v-textarea>
+        <v-textarea
+          clearable
+          label="내용"
+          v-model="data.content"
+          variant="outlined"
+        ></v-textarea>
       </div>
       <div class="util-box">
         <div></div>

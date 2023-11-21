@@ -28,8 +28,8 @@ const userId = ref("");
 // );
 
 const URL = {
-  1: "http://192.168.0.2/vue",
-  2: "http://localhost/vue",
+  1: "http://localhost/vue",
+  2: "http://192.168.0.2/vue",
   3: "http://192.168.31.75/vue",
 };
 const logoutEvent = () => {
@@ -39,7 +39,7 @@ const logoutEvent = () => {
   }
   const userId = store.decodedToken(localStorage.accessToken);
   axios
-    .get(`${URL[3]}/user/logout/${userId}`)
+    .get(`${URL[2]}/user/logout/${userId}`)
     .then((res) => {
       if (res.status === 200) {
         mStore.changeMenuState(true);
@@ -56,7 +56,9 @@ const goList = () => {
 
 <template>
   <v-toolbar>
-    <v-toolbar-title class="pointer" @click="go('home')">EnjoyTrip</v-toolbar-title>
+    <v-toolbar-title class="pointer" @click="go('home')"
+      >EnjoyTrip</v-toolbar-title
+    >
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn flat @click="">여행지도</v-btn>

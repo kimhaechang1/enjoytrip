@@ -38,7 +38,7 @@ export const useUserInfoStore = defineStore("userInfo", () => {
     if (!localStorage.accessToken) return false;
     let accessToken = localStorage.accessToken;
     try {
-      await axios.get(`${URL[3]}/user/info/${userId}`, {
+      await axios.get(`${URL[2]}/user/info/${userId}`, {
         headers: {
           Authorization: accessToken,
         },
