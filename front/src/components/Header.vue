@@ -39,7 +39,7 @@ const logoutEvent = () => {
   }
   const userId = store.decodedToken(localStorage.accessToken);
   axios
-    .get(`${URL[1]}/user/logout/${userId}`)
+    .get(`${URL[3]}/user/logout/${userId}`)
     .then((res) => {
       if (res.status === 200) {
         mStore.changeMenuState(true);
@@ -56,9 +56,7 @@ const goList = () => {
 
 <template>
   <v-toolbar>
-    <v-toolbar-title class="pointer" @click="go('home')"
-      >EnjoyTrip</v-toolbar-title
-    >
+    <v-toolbar-title class="pointer" @click="go('home')">EnjoyTrip</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn flat @click="">여행지도</v-btn>

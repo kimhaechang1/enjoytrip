@@ -42,7 +42,7 @@ const getBoardList = async () => {
   let res;
   try {
     res = await axios.get(
-      `${URL[2]}/board?pgno=${pgno}&spp=${spp}&key=${key}&word=${word}&cate=${cate}`,
+      `${URL[3]}/board?pgno=${pgno}&spp=${spp}&key=${key}&word=${word}&cate=${cate}`,
       {
         headers: {
           "Content-type": "application/json",
@@ -99,14 +99,7 @@ watch(
       title.value = "후기게시판";
     }
     tabs.value.map((tab) => {
-      console.log(
-        "name : " +
-          tab.name +
-          " cate : " +
-          tab.cate +
-          " present : " +
-          query.value.cate
-      );
+      console.log("name : " + tab.name + " cate : " + tab.cate + " present : " + query.value.cate);
       if (tab.cate == cate) {
         tab.isOpen = true;
       } else {
@@ -198,6 +191,18 @@ const goViewEvent = (articleNo) => {
 const refreshEvent = () => {
   router.go();
 };
+const goWriteEvent = () => {
+  router.push({
+    name: "board-write",
+    query: {
+      pgno: query.value.pgno,
+      spp: query.value.spp,
+      key: query.value.key,
+      word: query.value.word,
+      cate: query.value.cate,
+    },
+  });
+};
 </script>
 
 <template>
@@ -216,6 +221,7 @@ const refreshEvent = () => {
         </template>
       </div>
       <div class="search-layout">
+        <button @click="goWriteEvent">글쓰기</button>
         <button @click="refreshEvent">새로고침</button>
         <select v-model="key">
           <option value="">검색 기준</option>
@@ -311,8 +317,7 @@ const refreshEvent = () => {
   font-weight: lighter;
 }
 .table-item:hover {
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
-    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   /* box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px; */
 }
 .table-item:visited {

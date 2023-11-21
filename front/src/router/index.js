@@ -4,6 +4,7 @@ import LoginView from "../views/LoginView.vue";
 import SearchView from "../views/SearchView.vue";
 import UserLogin from "../components/UserLogin.vue";
 import UserRegister from "../components/UserRegister.vue";
+import BoardWrite from "../components/BoardWrite.vue";
 import BoardView from "../views/BoardView.vue";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
 import { menuStore } from "../stores/menuStore.js";
@@ -87,6 +88,32 @@ const router = createRouter({
           path: ":articleNo",
           name: "board-view",
           component: () => import("../components/BoardView.vue"),
+        },
+        {
+          path: "write",
+          name: "board-write",
+          component: BoardWrite,
+          beforeEnter: async (to, from) => {
+            const userStore = useUserInfoStore();
+            const chk = await userStore.isLoginCheck();
+            if (!chk) {
+              alert("로그인이 필요합니다.");
+              return { name: "login" };
+            }
+          },
+        },
+        {
+          path: "update/:articleNo",
+          name: "board-update",
+          component: () => import("../components/BoardWrite.vue"),
+          beforeEnter: async (to, from) => {
+            const userStore = useUserInfoStore();
+            const chk = await userStore.isLoginCheck();
+            if (!chk) {
+              alert("로그인이 필요합니다.");
+              return { name: "login" };
+            }
+          },
         },
       ],
     },

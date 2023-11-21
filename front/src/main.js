@@ -5,6 +5,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import Vue3Autocounter from "vue3-autocounter";
 /* import font awesome icon component */
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { faMap } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 import App from "./App.vue";
@@ -19,6 +20,7 @@ import * as directives from "vuetify/directives";
 import * as labsComponents from "vuetify/labs/components";
 const app = createApp(App);
 library.add(faArrowUpRightFromSquare);
+library.add(faMap);
 console.log("aliases", aliases);
 console.log("mdi", mdi);
 

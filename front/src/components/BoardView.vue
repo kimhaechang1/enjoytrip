@@ -29,21 +29,13 @@ const presentUser = ref("");
 const isUtilOpen = ref(false);
 
 const query = ref({});
-
+const plannerDetail = ref({});
 onMounted(async () => {
   const id = route.params.articleNo;
   try {
-    const res = await axios.get(`${URL[2]}/board/${id}`);
-    const {
-      articleNo,
-      category,
-      content,
-      date,
-      hit,
-      subject,
-      userId,
-      userName,
-    } = res.data;
+    const res = await axios.get(`${URL[3]}/board/${id}`);
+    const { articleNo, category, content, date, hit, subject, userId, userName, plannerId } =
+      res.data;
     let newObj = {};
 
     newObj = {
@@ -62,10 +54,13 @@ onMounted(async () => {
       newObj.category = "자유";
     } else if (category == 2) {
       newObj.category = "후기";
-      newObj.link = res.data.hasOwnProperty("link") ? res.data.link : "";
+      const res = await axios.get(`${URL[3]}/plan/${plannerId}`);
+      if (res.data.resultData) {
+        plannerDetail.value = res.data.resultData;
+      }
     }
     data.value = newObj;
-
+    console.log(newObj);
     console.log(data.value);
   } catch (err) {
     console.log(err);
@@ -111,7 +106,7 @@ const goBackEvent = () => {
 };
 const deleteEvent = async () => {
   try {
-    const res = await axios.delete(`${URL[2]}/board/${data.value.articleNo}`);
+    const res = await axios.delete(`${URL[3]}/board/${data.value.articleNo}`);
     if (res.status == 200) {
       alert("성공적으로 삭제되었습니다.");
     }
@@ -131,6 +126,23 @@ const deleteEvent = async () => {
     },
   });
 };
+const updateEvent = () => {
+  router.push({
+    name: "board-update",
+    params: {
+      articleNo: data.value.articleNo,
+    },
+    query: {
+      pgno: query.value.pgno,
+      spp: query.value.spp,
+      key: query.value.key,
+      word: query.value.word,
+      cate: query.value.cate,
+    },
+  });
+};
+
+const goMapEvent = () => {};
 </script>
 
 <template>
@@ -155,7 +167,7 @@ const deleteEvent = async () => {
               <div class="view-header-util">
                 <div></div>
                 <div class="view-header-util-box">
-                  <button class="update-btn">수정</button>
+                  <button class="update-btn" @click="updateEvent">수정</button>
                   <button class="delete-btn" @click="deleteEvent">삭제</button>
                 </div>
               </div>
@@ -163,7 +175,17 @@ const deleteEvent = async () => {
           </div>
           <div class="view-body">
             <template v-if="data.category === '후기'">
-              <div class="view-body-link" @click="">후기 보러가기</div>
+              <div class="view-body-link">
+                <div>제목 : {{ plannerDetail.plannerTitle }}</div>
+                <div>
+                  기간 : {{ toStringByFormatting(new Date(plannerDetail.startDate)) }} ~
+                  {{ toStringByFormatting(new Date(plannerDetail.endDate)) }}
+                </div>
+                <div>
+                  <button @click="goMapEvent">지도로 보기</button>
+                  <font-awesome-icon icon="fa-regular fa-map" />
+                </div>
+              </div>
             </template>
             <div class="view-body-content">
               <div class="content">
@@ -224,8 +246,30 @@ const deleteEvent = async () => {
   flex-direction: row;
   gap: 8px;
 }
+.view-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
 .view-body-content {
   min-height: 240px;
+}
+.view-body-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.view-body-link > div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+}
+.view-body-link > div > button {
+  border-radius: 5px;
+}
+.view-body-link > div > button:hover {
+  background-color: aliceblue;
 }
 .update-btn {
   border-radius: 5px;
@@ -249,6 +293,7 @@ const deleteEvent = async () => {
   flex-direction: row;
   align-items: end;
   justify-content: end;
+  margin-bottom: 50px;
 }
 .prev-btn {
   border-radius: 5px;

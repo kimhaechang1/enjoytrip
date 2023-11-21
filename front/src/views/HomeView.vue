@@ -25,7 +25,7 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      // axios.get(`${URL[2]}/attr/gugun/${sidoCode}`)
+      // axios.get(`${URL[3]}/attr/gugun/${sidoCode}`)
       // .then((res)=>{
       //   gugunList.value = res.data.resultData
       // })
@@ -83,27 +83,27 @@ onMounted(() => {
       },
     ],
   };
-  // axios.get(`${URL[2]}/attr/sido`)
+  // axios.get(`${URL[3]}/attr/sido`)
   // .then((res)=>{
   //   sidoList.value = res.data.resultData
   // })
 
-  // axios.get(`${URL[2]}/attr/count`)
+  // axios.get(`${URL[3]}/attr/count`)
   // .then((res)=>{
   //   attrCount.value = parseInt(res.data.resultData.count)
   // })
 
-  // axios.get(`${URL[2]}/plan/count`)
+  // axios.get(`${URL[3]}/plan/count`)
   // .then((res)=>{
   //   planCount.value = parseInt(res.data.resultData.count)
   // })
 
-  // axios.get(`${URL[2]}/board/count`)
+  // axios.get(`${URL[3]}/board/count`)
   // .then((res)=>{
   //   boardCount.value = parseInt(res.data.resultData.count)
   // })
 
-  // axios.get(`${URL[2]}/search/rank`)
+  // axios.get(`${URL[3]}/search/rank`)
   // .then((res)=>{
   //   searchRank.value = res.data.resultData
   // })
@@ -117,8 +117,7 @@ const submitEvent = () => {
 
   const searchData = {
     sidoCode: selectedSido.value.sidoCode,
-    gugunCode:
-      selectedGugun.value.gugunCode == 0 ? "" : selectedGugun.value.gugunCode,
+    gugunCode: selectedGugun.value.gugunCode == 0 ? "" : selectedGugun.value.gugunCode,
     word: word.value,
   };
   console.log(searchData);
@@ -156,12 +155,7 @@ const goBoardEvent = () => {
             variant="outlined"
             :disabled="isSelected"
           ></v-select>
-          <v-text-field
-            clearable
-            label="검색어"
-            variant="outlined"
-            v-model="word"
-          ></v-text-field>
+          <v-text-field clearable label="검색어" variant="outlined" v-model="word"></v-text-field>
           <button class="submit-btn" @click="submitEvent">검색</button>
         </div>
       </div>
