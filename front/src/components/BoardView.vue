@@ -3,7 +3,6 @@ import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
 import { toStringByFormatting } from "../util/dateFormat.js";
-import ChildCommentWrite from "./ChildCommentWrite.vue";
 import Comment from "./Comment.vue";
 import axios from "axios";
 // dummy data import
@@ -29,7 +28,7 @@ const data = ref({
   link: "",
 });
 
-const presentUser = ref("ssafy4");
+const presentUser = ref("");
 const isUtilOpen = ref(false);
 
 const query = ref({});
@@ -43,95 +42,93 @@ const serverSideCommentList = ref([]);
 onMounted(async () => {
   const id = route.params.articleNo;
   // dummy data preprocess
-  const {
-    articleNo,
-    category,
-    content,
-    date,
-    hit,
-    subject,
-    userId,
-    userName,
-    plannerId,
-    comment,
-  } = article;
-  let newObj = {};
+  // const {
+  //   articleNo,
+  //   category,
+  //   content,
+  //   date,
+  //   hit,
+  //   subject,
+  //   userId,
+  //   userName,
+  //   plannerId,
+  //   comment,
+  // } = article;
+  // let newObj = {};
 
-  newObj = {
-    articleNo,
-    content,
-    date: toStringByFormatting(new Date(date)),
-    hit,
-    subject,
-    userId,
-    userName,
-  };
-  newObj.category = "자유";
-  console.log("category : " + category);
-  data.value = newObj;
-  serverSideCommentList.value = comment;
-  makeCommentList();
-  console.log(commentList.value);
-  // try {
-  //   const res = await axios.get(`${URL[2]}/board/${id}`);
+  // newObj = {
+  //   articleNo,
+  //   content,
+  //   date: toStringByFormatting(new Date(date)),
+  //   hit,
+  //   subject,
+  //   userId,
+  //   userName,
+  // };
+  // newObj.category = "자유";
+  // data.value = newObj;
+  // serverSideCommentList.value = comment;
 
-  //   const {
-  //     articleNo,
-  //     category,
-  //     content,
-  //     date,
-  //     hit,
-  //     subject,
-  //     userId,
-  //     userName,
-  //     plannerId,
-  //   } = res.data;
-  //   let newObj = {};
+  try {
+    const res = await axios.get(`${URL[3]}/board/${id}`);
 
-  //   newObj = {
-  //     articleNo,
-  //     content,
-  //     date: toStringByFormatting(new Date(date)),
-  //     hit,
-  //     subject,
-  //     userId,
-  //     userName,
-  //   };
-  //   console.log("category : " + category);
-  //   if (category == 0) {
-  //     newObj.category = "공지사항";
-  //   } else if (category == 1) {
-  //     newObj.category = "자유";
-  //   } else if (category == 2) {
-  //     newObj.category = "후기";
-  //     const res = await axios.get(`${URL[2]}/plan/${plannerId}`);
-  //     if (res.data.resultData) {
-  //       plannerDetail.value = res.data.resultData;
-  //     }
-  //   }
-  //   data.value = newObj;
-  //   console.log(newObj);
-  //   console.log(data.value);
-  // } catch (err) {
-  //   console.log(err);
-  //   if (err.response.status == 404) {
-  //     alert("해당하는 페이지를 찾을 수 없습니다.");
-  //     router.go(-1);
-  //   }
-  // }
-  // const userId = await userStore.getUserId();
-  // presentUser.value = userId;
-  // console.log(data.value.category);
-  // console.log(presentUser.value);
-  // if (data.value.category === "공지사항") {
-  //   if (presentUser.value === "admin") {
-  //     isUtilOpen.value = true;
-  //   }
-  // } else {
-  //   if (presentUser.value === data.value.userId) {
-  //     isUtilOpen.value = true;
-  //   }
-  // }
+    const {
+      articleNo,
+      category,
+      content,
+      date,
+      hit,
+      subject,
+      userId,
+      userName,
+      plannerId,
+      comment,
+    } = res.data;
+    let newObj = {};
+
+    newObj = {
+      articleNo,
+      content,
+      date: toStringByFormatting(new Date(date)),
+      hit,
+      subject,
+      userId,
+      userName,
+    };
+    if (category == 0) {
+      newObj.category = "공지사항";
+    } else if (category == 1) {
+      newObj.category = "자유";
+    } else if (category == 2) {
+      newObj.category = "후기";
+      const res = await axios.get(`${URL[3]}/plan/${plannerId}`);
+      if (res.data.resultData) {
+        plannerDetail.value = res.data.resultData;
+      }
+    }
+    if (comment) {
+      serverSideCommentList.value = comment;
+      makeCommentList();
+    }
+    data.value = newObj;
+  } catch (err) {
+    console.log(err);
+    if (err.response.status == 404) {
+      alert("해당하는 페이지를 찾을 수 없습니다.");
+      router.go(-1);
+    }
+  }
+  const userId = await userStore.getUserId();
+  presentUser.value = userId;
+  if (data.value.category === "공지사항") {
+    if (presentUser.value === "admin") {
+      isUtilOpen.value = true;
+    }
+  } else {
+    if (presentUser.value === data.value.userId) {
+      isUtilOpen.value = true;
+    }
+  }
 
   let newQuery = {};
   newQuery.pgno = route.query.pgno;
@@ -149,8 +146,7 @@ const makeCommentList = () => {
     if (comment.parentId == null) {
       newCommentList[comment.commentId] = comment;
     } else {
-      const { commentId, content, userId, parentId, child } =
-        newCommentList[comment.parentId];
+      const { commentId, content, userId, parentId, child } = newCommentList[comment.parentId];
       let newChildList = [];
       if (child) {
         newChildList = [...child];
@@ -168,20 +164,16 @@ const makeCommentList = () => {
       }
     }
   });
-  console.log(newCommentList);
   for (const key in newCommentList) {
     let obj = { ...newCommentList[key] };
     newResultCommentList.push(obj);
   }
   commentList.value = newResultCommentList;
-  console.log(commentList.value);
 };
 
 watch(serverSideCommentList, (newValue) => {
-  console.log("newValue", newValue);
   serverSideCommentList.value = newValue;
   makeCommentList();
-  console.log(commentList.value);
 });
 
 const goBackEvent = () => {
@@ -198,7 +190,7 @@ const goBackEvent = () => {
 };
 const deleteEvent = async () => {
   try {
-    const res = await axios.delete(`${URL[2]}/board/${data.value.articleNo}`);
+    const res = await axios.delete(`${URL[3]}/board/${data.value.articleNo}`);
     if (res.status == 200) {
       alert("성공적으로 삭제되었습니다.");
     }
@@ -238,88 +230,143 @@ const goMapEvent = () => {};
 
 // template variable for test at comment
 
-const getAllCommentList = () => {
-  // api
+const getAllCommentList = async () => {
+  const res = await axios.get(`${URL[3]}/comment/${data.value.articleNo}`);
+  serverSideCommentList.value = res.data.comment;
 };
 
-const getAllChildCommentList = () => {
-  // api
-};
+/** deprecated */
+// const getAllChildCommentList = () => {
+//   // api
+// };
 
-const addCommentEvent = () => {
-  const lastCommentId =
-    serverSideCommentList.value[serverSideCommentList.value.length - 1]
-      .commentId;
-  let newArray = [...serverSideCommentList.value];
+const addCommentEvent = async () => {
+  // For dummy-data test
+  // const lastCommentId =
+  //   serverSideCommentList.value[serverSideCommentList.value.length - 1]
+  //     .commentId;
+  // let newArray = [...serverSideCommentList.value];
+  // let newObj = {
+  //   commentId: lastCommentId + 1,
+  //   content: writeComment.value,
+  //   userId: presentUser,
+  //   parentId: null,
+  // };
+  // newArray.push(newObj);
+  // serverSideCommentList.value = newArray;
+  //
   let newObj = {
-    commentId: lastCommentId + 1,
     content: writeComment.value,
-    userId: presentUser,
-    parentId: null,
+    userId: presentUser.value,
   };
-  newArray.push(newObj);
-  serverSideCommentList.value = newArray;
+  try {
+    await axios.post(`${URL[3]}/comment/${data.value.articleNo}`, JSON.stringify(newObj), {
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  getAllCommentList();
 };
 
-const updateCommentEvent = (newComment) => {
-  console.log("newComment", newComment);
-  let newArray = [];
-  serverSideCommentList.value.map((comment) => {
-    if (comment.commentId == newComment.commentId) {
-      newArray.push({
-        ...comment,
-        content: newComment.content,
-      });
-    } else {
-      newArray.push(comment);
-    }
-  });
-  console.log("newArray", newArray);
-  serverSideCommentList.value = newArray;
-  console.log("serverSideCommentList", serverSideCommentList.value);
-};
-
-const deleteCommentEvent = (delComment) => {
-  serverSideCommentList.value = serverSideCommentList.value.filter(
-    (comment) => {
-      return comment.commentId != delComment.commentId;
-    }
-  );
-};
-
-const addChildCommentEvent = (newComment) => {
-  const lastCommentId =
-    serverSideCommentList.value[serverSideCommentList.value.length - 1]
-      .commentId;
-  let newArray = [...serverSideCommentList.value];
+const updateCommentEvent = async (newComment) => {
+  // let newArray = [];
+  // serverSideCommentList.value.map((comment) => {
+  //   if (comment.commentId == newComment.commentId) {
+  //     newArray.push({
+  //       ...comment,
+  //       content: newComment.content,
+  //     });
+  //   } else {
+  //     newArray.push(comment);
+  //   }
+  // });
+  // serverSideCommentList.value = newArray;
   let newObj = {
-    ...newComment,
-    commentId: lastCommentId + 1,
+    content: newComment.content,
+    commentId: newComment.commentId,
   };
-  newArray.push(newObj);
-  serverSideCommentList.value = newArray;
+  try {
+    await axios.put(`${URL[3]}/comment/${newComment.commentId}`, JSON.stringify(newObj), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  getAllCommentList();
 };
 
-const updateChildCommentEvent = (newComment) => {
-  let newArray = [];
-  serverSideCommentList.value.map((comment) => {
-    if (comment.commentId == newComment.commentId) {
-      newArray.push({
-        ...comment,
-        content: newComment.content,
-      });
-    } else {
-      newArray.push(comment);
-    }
-  });
+const deleteCommentEvent = async (delComment) => {
+  // serverSideCommentList.value = serverSideCommentList.value.filter((comment) => {
+  //   return comment.commentId != delComment.commentId;
+  // });
+  try {
+    await axios.delete(`${URL[3]}/comment/${delComment.commentId}`);
+  } catch (err) {
+    console.log(err);
+  }
+  getAllCommentList();
 };
 
-const deleteChildCommentEvent = (delComment) => {
-  serverSideCommentList.value = serverSideCommentList.value.filter(
-    (comment) => {
-      return comment.commentId != delComment.commentId;
-    }
-  );
+const addChildCommentEvent = async (newComment) => {
+  // const lastCommentId =
+  //   serverSideCommentList.value[serverSideCommentList.value.length - 1].commentId;
+  // let newArray = [...serverSideCommentList.value];
+  // let newObj = {
+  //   ...newComment,
+  //   commentId: lastCommentId + 1,
+  // };
+  // newArray.push(newObj);
+  // serverSideCommentList.value = newArray;
+  try {
+    await axios.post(`${URL[3]}/comment/${data.value.articleNo}`, JSON.stringify(newComment), {
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  getAllCommentList();
+};
+
+const updateChildCommentEvent = async (newComment) => {
+  // let newArray = [];
+  // serverSideCommentList.value.map((comment) => {
+  //   if (comment.commentId == newComment.commentId) {
+  //     newArray.push({
+  //       ...comment,
+  //       content: newComment.content,
+  //     });
+  //   } else {
+  //     newArray.push(comment);
+  //   }
+  // });
+  try {
+    await axios.put(`${URL[3]}/comment/${newComment.commentId}`, JSON.stringify(newComment), {
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  getAllCommentList();
+};
+
+const deleteChildCommentEvent = async (delComment) => {
+  // serverSideCommentList.value = serverSideCommentList.value.filter((comment) => {
+  //   return comment.commentId != delComment.commentId;
+  // });
+  try {
+    await axios.delete(`${URL[3]}/comment/${delComment.commentId}`);
+  } catch (err) {
+    console.log(err);
+  }
 };
 </script>
 

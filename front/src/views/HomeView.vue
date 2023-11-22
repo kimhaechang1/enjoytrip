@@ -4,6 +4,7 @@ import axios from "axios";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
 import { onMounted, ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
+import ContentTypeId from "../components/ContentTypeId.json";
 const URL = {
   1: "http://192.168.0.2/vue",
   2: "http://localhost/vue",
@@ -25,10 +26,9 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      // axios.get(`${URL[3]}/attr/gugun/${sidoCode}`)
-      // .then((res)=>{
-      //   gugunList.value = res.data.resultData
-      // })
+      axios.get(`${URL[3]}/attr/${sidoCode}/gugun`).then((res) => {
+        gugunList.value = res.data.resultData;
+      });
     }
   }
 );
@@ -42,6 +42,10 @@ const selectedGugun = ref({
   gugunName: "",
 });
 
+const selectedContentType = ref({});
+
+const contentTypeList = ref([]);
+
 const word = ref("");
 
 const attrCount = ref(0);
@@ -50,58 +54,24 @@ const boardCount = ref(0);
 const searchRank = ref([]);
 
 onMounted(() => {
-  // dumy data
-  sidoList.value = [
-    {
-      sidoName: "서울",
-      sidoCode: 1,
-    },
-    {
-      sidoName: "인천",
-      sidoCode: 2,
-    },
-  ];
-  gugunData.value = {
-    1: [
-      {
-        gugunCode: 1,
-        gugunName: "강남구",
-      },
-      {
-        gugunCode: 2,
-        gugunName: "강화군",
-      },
-    ],
-    2: [
-      {
-        gugunCode: 1,
-        gugunName: "강동구",
-      },
-      {
-        gugunCode: 2,
-        gugunName: "계양구",
-      },
-    ],
-  };
-  // axios.get(`${URL[3]}/attr/sido`)
-  // .then((res)=>{
-  //   sidoList.value = res.data.resultData
-  // })
+  contentTypeList.value = ContentTypeId;
+  selectedContentType.value = { contentName: "관광지", contentTypeId: 12 };
 
-  // axios.get(`${URL[3]}/attr/count`)
-  // .then((res)=>{
-  //   attrCount.value = parseInt(res.data.resultData.count)
-  // })
+  axios.get(`${URL[3]}/attr/sido`).then((res) => {
+    sidoList.value = res.data.resultData;
+  });
 
-  // axios.get(`${URL[3]}/plan/count`)
-  // .then((res)=>{
-  //   planCount.value = parseInt(res.data.resultData.count)
-  // })
+  axios.get(`${URL[3]}/attr/count`).then((res) => {
+    attrCount.value = parseInt(res.data.resultData);
+  });
 
-  // axios.get(`${URL[3]}/board/count`)
-  // .then((res)=>{
-  //   boardCount.value = parseInt(res.data.resultData.count)
-  // })
+  axios.get(`${URL[3]}/plan/count`).then((res) => {
+    planCount.value = parseInt(res.data.resultData);
+  });
+
+  axios.get(`${URL[3]}/board/count`).then((res) => {
+    boardCount.value = parseInt(res.data.resultData);
+  });
 
   // axios.get(`${URL[3]}/search/rank`)
   // .then((res)=>{
@@ -114,13 +84,21 @@ const submitEvent = () => {
     alert("시/도 선택은 검색 최소 조건입니다.");
     return false;
   }
+  if (selectedContentType.value.contentTypeId < 12) {
+    alert("잘못된 선택입니다.");
+    return false;
+  }
 
-  const searchData = {
-    sidoCode: selectedSido.value.sidoCode,
-    gugunCode: selectedGugun.value.gugunCode == 0 ? "" : selectedGugun.value.gugunCode,
-    word: word.value,
-  };
-  console.log(searchData);
+  router.push({
+    name: "map",
+    query: {
+      type: 0,
+      sidoCode: selectedSido.value.sidoCode,
+      gugunCode: selectedGugun.value.gugunCode,
+      contentTypeId: selectedContentType.value.contentTypeId,
+      word: word.value,
+    },
+  });
 };
 const goBoardEvent = () => {
   router.push({ name: "board" });
@@ -155,6 +133,16 @@ const goBoardEvent = () => {
             variant="outlined"
             :disabled="isSelected"
           ></v-select>
+          <v-select
+            clearable
+            label="종류"
+            v-model="selectedContentType"
+            :items="contentTypeList"
+            item-title="contentName"
+            item-value="contentTypeId"
+            return-object
+            variant="outlined"
+          ></v-select>
           <v-text-field clearable label="검색어" variant="outlined" v-model="word"></v-text-field>
           <button class="submit-btn" @click="submitEvent">검색</button>
         </div>
@@ -176,7 +164,7 @@ const goBoardEvent = () => {
             <vue3-autocounter
               ref="counter"
               :startAmount="0"
-              :endAmount="9999"
+              :endAmount="attrCount"
               :duration="1"
               suffix=" 개"
               separator=","
@@ -187,16 +175,16 @@ const goBoardEvent = () => {
         <div class="carditem">
           <div class="carditem-title">
             전체 플레너 수
-            <font-awesome-icon
+            <!-- <font-awesome-icon
               icon="fa-solid fa-arrow-up-right-from-square"
               @click="goBoardEvent"
-            />
+            /> -->
           </div>
           <div class="carditem-body">
             <vue3-autocounter
               ref="counter"
               :startAmount="0"
-              :endAmount="9999"
+              :endAmount="planCount"
               :duration="1"
               suffix=" 개"
               separator=","
@@ -217,7 +205,7 @@ const goBoardEvent = () => {
             <vue3-autocounter
               ref="counter"
               :startAmount="0"
-              :endAmount="9999"
+              :endAmount="boardCount"
               :duration="1"
               suffix=" 개"
               separator=","

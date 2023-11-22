@@ -77,17 +77,8 @@ onMounted(async () => {
   if (route.name == "board-update") {
     curArticleNo.value = route.params.articleNo;
     const res = await axios.get(`${URL[2]}/board/${curArticleNo.value}`);
-    const {
-      articleNo,
-      category,
-      content,
-      date,
-      hit,
-      subject,
-      userId,
-      userName,
-      plannerId,
-    } = res.data;
+    const { articleNo, category, content, date, hit, subject, userId, userName, plannerId } =
+      res.data;
     // {
     //     "articleNo": 92,
     //     "userId": "ssafy4",
@@ -169,7 +160,7 @@ const submitEvent = () => {
 
   if (route.name === "board-update") {
     try {
-      const res = axios.put(`${URL[2]}/board`, JSON.stringify(obj), {
+      const res = axios.put(`${URL[3]}/board`, JSON.stringify(obj), {
         headers: {
           "Content-type": "application/json",
         },
@@ -183,7 +174,7 @@ const submitEvent = () => {
     }
   } else {
     try {
-      const res = axios.post(`${URL[2]}/board`, JSON.stringify(obj), {
+      const res = axios.post(`${URL[3]}/board`, JSON.stringify(obj), {
         headers: {
           "Content-type": "application/json",
         },
@@ -238,12 +229,7 @@ const submitEvent = () => {
         </template>
       </div>
       <div class="write-layout-body">
-        <v-textarea
-          clearable
-          label="내용"
-          v-model="data.content"
-          variant="outlined"
-        ></v-textarea>
+        <v-textarea clearable label="내용" v-model="data.content" variant="outlined"></v-textarea>
       </div>
       <div class="util-box">
         <div></div>

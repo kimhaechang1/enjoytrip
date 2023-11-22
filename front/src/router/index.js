@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
-import SearchView from "../views/SearchView.vue";
 import UserLogin from "../components/UserLogin.vue";
 import UserRegister from "../components/UserRegister.vue";
 import BoardWrite from "../components/BoardWrite.vue";
@@ -66,11 +65,6 @@ const router = createRouter({
       ],
     },
     {
-      path: "/search",
-      name: "search",
-      component: SearchView,
-    },
-    {
       path: "/board",
       name: "board",
       component: BoardView,
@@ -116,6 +110,11 @@ const router = createRouter({
           },
         },
       ],
+    },
+    {
+      path: "/map",
+      name: "map",
+      component: () => import("../views/MapView.vue"),
     },
   ],
 });

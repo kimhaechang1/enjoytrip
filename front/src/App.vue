@@ -6,53 +6,23 @@ import Header from "./components/Header.vue";
 
 const route = useRoute();
 
-const sideBarToggle = ref(false);
-const headerToggle = ref(true);
-const sideCompToggle = ref(false);
-const sideBarActive = ref({});
-const contentLayout = ref({});
-
-const switchToggle = () => {
-  sideBarToggle.value = !sideBarToggle.value;
-  if (sideBarToggle.value) {
-    delete sideBarActive.value.sideBarSlideIn;
-    delete contentLayout.value.fulllayout;
-    contentLayout.value.contentlayout = true;
-    sideBarActive.value.sideBarSlideOut = true;
-  } else {
-    delete sideBarActive.value.sideBarSlideOut;
-    delete contentLayout.value.contentLayout;
-    contentLayout.value.fulllayout = true;
-    sideBarActive.value.sideBarSlideIn = true;
-  }
-};
+const display = ref(true);
 
 watch(
   () => route.name,
   (name, oldName) => {
-    if (name === "search") {
-      sideCompToggle.value = true;
-      headerToggle.value = false;
+    if (name === "map") {
+      display.value = false;
     } else {
-      sideCompToggle.value = false;
-      headerToggle.value = true;
+      display.value = true;
     }
   }
 );
 </script>
 
 <template>
-  <Header v-if="headerToggle"></Header>
-  <div v-if="sideCompToggle" class="layout">
-    <div v-if="sideBarToggle" class="sidelayout" :class="sideBarActive">
-      <SideBar></SideBar>
-    </div>
-    <button @click="switchToggle">{{ sideBarToggle ? "<<" : ">>" }}</button>
-    <div :class="contentLayout">
-      <router-view></router-view>
-    </div>
-  </div>
-  <div v-if="headerToggle" class="mainLayout">
+  <Header v-if="display"></Header>
+  <div class="mainLayout">
     <router-view></router-view>
   </div>
 </template>
