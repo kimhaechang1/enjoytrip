@@ -70,7 +70,7 @@ onMounted(async () => {
   // serverSideCommentList.value = comment;
 
   try {
-    const res = await axios.get(`${URL[3]}/board/${id}`);
+    const res = await axios.get(`${URL[2]}/board/${id}`);
 
     const {
       articleNo,
@@ -101,7 +101,7 @@ onMounted(async () => {
       newObj.category = "자유";
     } else if (category == 2) {
       newObj.category = "후기";
-      const res = await axios.get(`${URL[3]}/plan/${plannerId}`);
+      const res = await axios.get(`${URL[2]}/plan/${plannerId}`);
       if (res.data.resultData) {
         plannerDetail.value = res.data.resultData;
       }
@@ -146,7 +146,8 @@ const makeCommentList = () => {
     if (comment.parentId == null) {
       newCommentList[comment.commentId] = comment;
     } else {
-      const { commentId, content, userId, parentId, child } = newCommentList[comment.parentId];
+      const { commentId, content, userId, parentId, child } =
+        newCommentList[comment.parentId];
       let newChildList = [];
       if (child) {
         newChildList = [...child];
@@ -190,7 +191,7 @@ const goBackEvent = () => {
 };
 const deleteEvent = async () => {
   try {
-    const res = await axios.delete(`${URL[3]}/board/${data.value.articleNo}`);
+    const res = await axios.delete(`${URL[2]}/board/${data.value.articleNo}`);
     if (res.status == 200) {
       alert("성공적으로 삭제되었습니다.");
     }
@@ -231,7 +232,7 @@ const goMapEvent = () => {};
 // template variable for test at comment
 
 const getAllCommentList = async () => {
-  const res = await axios.get(`${URL[3]}/comment/${data.value.articleNo}`);
+  const res = await axios.get(`${URL[2]}/comment/${data.value.articleNo}`);
   serverSideCommentList.value = res.data.comment;
 };
 
@@ -260,11 +261,15 @@ const addCommentEvent = async () => {
     userId: presentUser.value,
   };
   try {
-    await axios.post(`${URL[3]}/comment/${data.value.articleNo}`, JSON.stringify(newObj), {
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
+    await axios.post(
+      `${URL[2]}/comment/${data.value.articleNo}`,
+      JSON.stringify(newObj),
+      {
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
   } catch (err) {
     console.log(err);
   }
@@ -289,11 +294,15 @@ const updateCommentEvent = async (newComment) => {
     commentId: newComment.commentId,
   };
   try {
-    await axios.put(`${URL[3]}/comment/${newComment.commentId}`, JSON.stringify(newObj), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    await axios.put(
+      `${URL[2]}/comment/${newComment.commentId}`,
+      JSON.stringify(newObj),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (err) {
     console.log(err);
   }
@@ -305,7 +314,7 @@ const deleteCommentEvent = async (delComment) => {
   //   return comment.commentId != delComment.commentId;
   // });
   try {
-    await axios.delete(`${URL[3]}/comment/${delComment.commentId}`);
+    await axios.delete(`${URL[2]}/comment/${delComment.commentId}`);
   } catch (err) {
     console.log(err);
   }
@@ -323,11 +332,15 @@ const addChildCommentEvent = async (newComment) => {
   // newArray.push(newObj);
   // serverSideCommentList.value = newArray;
   try {
-    await axios.post(`${URL[3]}/comment/${data.value.articleNo}`, JSON.stringify(newComment), {
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
+    await axios.post(
+      `${URL[2]}/comment/${data.value.articleNo}`,
+      JSON.stringify(newComment),
+      {
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
   } catch (err) {
     console.log(err);
   }
@@ -347,11 +360,15 @@ const updateChildCommentEvent = async (newComment) => {
   //   }
   // });
   try {
-    await axios.put(`${URL[3]}/comment/${newComment.commentId}`, JSON.stringify(newComment), {
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
+    await axios.put(
+      `${URL[2]}/comment/${newComment.commentId}`,
+      JSON.stringify(newComment),
+      {
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
   } catch (err) {
     console.log(err);
   }
@@ -363,7 +380,7 @@ const deleteChildCommentEvent = async (delComment) => {
   //   return comment.commentId != delComment.commentId;
   // });
   try {
-    await axios.delete(`${URL[3]}/comment/${delComment.commentId}`);
+    await axios.delete(`${URL[2]}/comment/${delComment.commentId}`);
   } catch (err) {
     console.log(err);
   }

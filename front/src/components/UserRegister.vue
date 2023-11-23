@@ -24,7 +24,7 @@ const isIdDupli = ref(false);
 
 const joinEvent = () => {
   axios
-    .post(`${URL[3]}/user/join`, JSON.stringify(userData.value), {
+    .post(`${URL[2]}/user/join`, JSON.stringify(userData.value), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -116,7 +116,12 @@ watch(
 
           <v-col>
             <v-col>
-              <v-btn @click="joinEvent" variant="outlined" class="md-6" block size="large"
+              <v-btn
+                @click="joinEvent"
+                variant="outlined"
+                class="md-6"
+                block
+                size="large"
                 >회원가입 하기</v-btn
               >
               <!--<v-btn @click="joinEvent">회원가입 하기</v-btn>-->

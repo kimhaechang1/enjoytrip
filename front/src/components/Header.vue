@@ -53,13 +53,15 @@ const goList = () => {
   router.push({ name: "board" });
 };
 const goMap = () => {
-  router.push({ name: "map" });
+  router.push({ name: "map", query: { type: 0 } });
 };
 </script>
 
 <template>
   <v-toolbar>
-    <v-toolbar-title class="pointer" @click="go('home')">EnjoyTrip</v-toolbar-title>
+    <v-toolbar-title class="pointer" @click="go('home')"
+      >EnjoyTrip</v-toolbar-title
+    >
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn flat @click="goMap">여행지도</v-btn>
