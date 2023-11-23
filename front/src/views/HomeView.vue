@@ -6,8 +6,8 @@ import { onMounted, ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import ContentTypeId from "../components/ContentTypeId.json";
 const URL = {
-  1: "http://192.168.0.2/vue",
-  2: "http://localhost/vue",
+  1: "http://localhost/vue",
+  2: "http://192.168.0.2/vue",
   3: "http://192.168.31.75/vue",
 };
 const router = useRouter();
@@ -26,7 +26,7 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      axios.get(`${URL[1]}/attr/${sidoCode}/gugun`).then((res) => {
+      axios.get(`${URL[3]}/attr/${sidoCode}/gugun`).then((res) => {
         gugunList.value = res.data.resultData;
       });
     }
@@ -57,19 +57,19 @@ onMounted(() => {
   contentTypeList.value = ContentTypeId;
   selectedContentType.value = { contentName: "관광지", contentTypeId: 12 };
 
-  axios.get(`${URL[1]}/attr/sido`).then((res) => {
+  axios.get(`${URL[3]}/attr/sido`).then((res) => {
     sidoList.value = res.data.resultData;
   });
 
-  axios.get(`${URL[1]}/attr/count`).then((res) => {
+  axios.get(`${URL[3]}/attr/count`).then((res) => {
     attrCount.value = parseInt(res.data.resultData);
   });
 
-  axios.get(`${URL[1]}/plan/count`).then((res) => {
+  axios.get(`${URL[3]}/plan/count`).then((res) => {
     planCount.value = parseInt(res.data.resultData);
   });
 
-  axios.get(`${URL[1]}/board/count`).then((res) => {
+  axios.get(`${URL[3]}/board/count`).then((res) => {
     boardCount.value = parseInt(res.data.resultData);
   });
 
@@ -143,12 +143,7 @@ const goBoardEvent = () => {
             return-object
             variant="outlined"
           ></v-select>
-          <v-text-field
-            clearable
-            label="검색어"
-            variant="outlined"
-            v-model="word"
-          ></v-text-field>
+          <v-text-field clearable label="검색어" variant="outlined" v-model="word"></v-text-field>
           <button class="submit-btn" @click="submitEvent">검색</button>
         </div>
       </div>

@@ -5,6 +5,7 @@ const props = defineProps({
   commentData: Object,
   editable: Boolean,
   loginUser: String,
+  writer: String,
 });
 const emit = defineEmits([
   "updateComment",
@@ -13,7 +14,10 @@ const emit = defineEmits([
   "updateChildComment",
   "deleteChildComment",
 ]);
-
+console.log(props.editable);
+console.log("item.userId", props.writer);
+console.log("loginUser", props.loginUser);
+console.log(props.writer === props.loginUser);
 const commentContent = ref(props.commentData.content);
 const editable = ref(props.editable);
 const editToggle = ref(false);

@@ -24,7 +24,7 @@ const isIdDupli = ref(false);
 
 const joinEvent = () => {
   axios
-    .post(`${URL[2]}/user/join`, JSON.stringify(userData.value), {
+    .post(`${URL[3]}/user/join`, JSON.stringify(userData.value), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -47,7 +47,7 @@ watch(
   async (id) => {
     console.log(id.length);
     if (id.length >= 4) {
-      const res = await axios.get(`${URL[2]}/user/idChk/${id}`);
+      const res = await axios.get(`${URL[3]}/user/idChk/${id}`);
       if (res.data["checkResult"]) {
         console.log(res.data["checkResult"]);
         isIdDupli.value = res.data["checkResult"];
@@ -116,12 +116,7 @@ watch(
 
           <v-col>
             <v-col>
-              <v-btn
-                @click="joinEvent"
-                variant="outlined"
-                class="md-6"
-                block
-                size="large"
+              <v-btn @click="joinEvent" variant="outlined" class="md-6" block size="large"
                 >회원가입 하기</v-btn
               >
               <!--<v-btn @click="joinEvent">회원가입 하기</v-btn>-->

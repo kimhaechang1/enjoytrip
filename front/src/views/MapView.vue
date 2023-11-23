@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, computed, watch } from "vue";
 import { useUserInfoStore } from "../stores/useUserInfoStore.js";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter, useRoute, onBeforeRouteUpdate } from "vue-router";
 import ContentTypeId from "../components/ContentTypeId.json";
 import VKakaoMap from "../components/VKakaoMap.vue";
 import { toStringByFormatting } from "../util/dateFormat.js";
@@ -11,19 +11,33 @@ const rail = ref(true);
 const drawer = ref(true);
 
 const URL = {
-  1: "http://192.168.0.2/vue",
-  2: "http://localhost/vue",
+  1: "http://localhost/vue",
+  2: "http://192.168.0.2/vue",
   3: "http://192.168.31.75/vue",
 };
 
 const route = useRoute();
 const router = useRouter();
 const store = useUserInfoStore();
+const isFromAnotherRoute = ref(false);
+const searchAttrResult = ref([]);
+const searchPlanResult = ref([]);
+const presentList = ref([]);
+
 const userId = ref("");
 const sidoList = ref([]);
 const sWord = ref("");
 const contentTypeList = ref([]);
-const presentList = ref([]);
+
+const curSelectedPlanner = ref({
+  plannerId: 0,
+  plannerTitle: "",
+});
+
+const curPlannerList = ref([]);
+
+watch(userId, (newUserId) => {});
+
 const gugunData = ref({});
 const gugunList = ref([]);
 const selectedGugun = ref({
@@ -53,8 +67,7 @@ const isSelected = computed(() => {
   return selectedSido.value.sidoCode == 0;
 });
 
-const searchAttrResult = ref([]);
-const searchPlanResult = ref([]);
+const selectList = ref([]); // 지도 용
 
 const startDate = ref("");
 const endDate = ref("");
@@ -64,6 +77,10 @@ const planItems = ref([]);
 
 const planItemsLen = computed(() => {
   return planItems.value.length > 0;
+});
+
+const isLogin = computed(() => {
+  return userId.value.length > 0;
 });
 
 const toggle = ref(0);
@@ -80,29 +97,16 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      axios.get(`${URL[1]}/attr/${sidoCode}/gugun`).then((res) => {
+      axios.get(`${URL[3]}/attr/${sidoCode}/gugun`).then((res) => {
         gugunList.value = res.data.resultData;
       });
     }
   }
 );
 
-watch(searchAttrResult, (newData) => {
-  searchAttrResult.value = newData;
-  presentList.value = newData;
-});
-
 watch(
   () => route.query,
-  async ({
-    type,
-    sidoCode,
-    gugunCode,
-    contentTypeId,
-    word,
-    startDate,
-    endDate,
-  }) => {
+  async ({ type, sidoCode, gugunCode, contentTypeId, word, startDate, endDate }) => {
     console.log("여기로 들어오나요?");
     if (type == 0) {
       let obj = {
@@ -111,15 +115,11 @@ watch(
         contentTypeId: parseInt(contentTypeId),
         searchWord: word,
       };
-      const res = await axios.post(
-        `${URL[1]}/attr/search`,
-        JSON.stringify(obj),
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      );
+      const res = await axios.post(`${URL[3]}/attr/search`, JSON.stringify(obj), {
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
       searchAttrResult.value = res.data.resultData;
       selectedContentType.value = {
         contentName: "관광지",
@@ -140,15 +140,11 @@ watch(
         startDate: toStringByFormatting(new Date(startDate)),
         endDate: toStringByFormatting(new Date(endDate)),
       };
-      const res = await axios.post(
-        `${URL[1]}/plan/search`,
-        JSON.stringify(obj),
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      );
+      const res = await axios.post(`${URL[3]}/plan/search`, JSON.stringify(obj), {
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
       searchPlanResult.value = res.data.resultData;
     }
   }
@@ -161,19 +157,11 @@ onMounted(async () => {
   console.log(userId.value);
   contentTypeList.value = ContentTypeId;
   selectedContentType.value = { contentName: "관광지", contentTypeId: 12 };
-  axios.get(`${URL[1]}/attr/sido`).then((res) => {
+  axios.get(`${URL[3]}/attr/sido`).then((res) => {
     sidoList.value = res.data.resultData;
   });
-  const {
-    type,
-    sidoCode,
-    gugunCode,
-    contentTypeId,
-    word,
-    startDate,
-    endDate,
-    plannerId,
-  } = route.query;
+  const { type, sidoCode, gugunCode, contentTypeId, word, startDate, endDate, plannerId } =
+    route.query;
   let obj = {};
   toggle.value = type;
   if (type == 0) {
@@ -183,17 +171,28 @@ onMounted(async () => {
       contentTypeId,
       searchWord: word,
     };
-    const res = await axios.post(`${URL[1]}/attr/search`, JSON.stringify(obj), {
+    const res = await axios.post(`${URL[3]}/attr/search`, JSON.stringify(obj), {
       headers: {
         "Content-Type": "application/json",
       },
     });
     searchAttrResult.value = res.data.resultData;
+
     console.log(searchAttrResult.value);
   } else if (type == 1 && plannerId) {
-    const res = await axios.get(`${URL[1]}/plan/${plannerId}`);
+    const res = await axios.get(`${URL[3]}/plan/${plannerId}`);
     searchPlanResult.value = [res.data.resultData];
     selectedPlannerId.value = plannerId;
+  }
+
+  if (userId.value) {
+  }
+});
+
+watch(searchAttrResult, (newData) => {
+  searchAttrResult.value = newData;
+  if (newData.length > 0) {
+    selectList.value = newData;
   }
 });
 
@@ -231,10 +230,7 @@ const submitPlannerEvent = () => {
     alert("시작 일과 끝 일은 필수 선택입니다.");
     return false;
   }
-  if (
-    new Date(startDate.value).getMilliseconds() >
-    new Date(endDate.value).getMilliseconds()
-  ) {
+  if (new Date(startDate.value).getMilliseconds() > new Date(endDate.value).getMilliseconds()) {
     alert("시작일 또는 끝 일이 잘못 선택되었습니다.");
     return false;
   }
@@ -250,9 +246,7 @@ const submitPlannerEvent = () => {
 };
 
 const getPlanItems = async () => {
-  const res = await axios.get(
-    `${URL[1]}/plan/${selectedPlannerId.value}/items`
-  );
+  const res = await axios.get(`${URL[1]}/plan/${selectedPlannerId.value}/items`);
   planItems.value = res.data.resultData;
 };
 
@@ -273,16 +267,20 @@ const goHome = () => {
   router.push({ name: "home" });
 };
 
+const selectOne = ref({});
+
 const selectMapItem = (item) => {
-  selectedMapItem.value = item;
+  selectOne.value = item;
+};
+
+const markerFlag = ref(false);
+const setMarker = () => {
+  markerFlag.value = true;
 };
 </script>
 
 <template>
-  <!--<VKakaoMap
-    :selectMapOne="selectedMapItem"
-    :presentList="presentList"
-  ></VKakaoMap>-->
+  <VKakaoMap :selectOne="selectOne" :selectList="selectList" :isSetMarker="markerFlag"></VKakaoMap>
   <v-layout>
     <!-- 왼쪽 사이드바 영역 시작 -->
     <v-navigation-drawer permanent :width="400" class="layout">
@@ -290,6 +288,11 @@ const selectMapItem = (item) => {
         <v-btn variant="outlined" @click="$router.go(-1)"> 뒤로가기 </v-btn>
         <v-btn variant="outlined" @click="goBoard"> 게시판 </v-btn>
         <v-btn variant="outlined" @click="goHome"> 홈으로 </v-btn>
+        <v-tooltip text="검색결과가 반영이 안될때 눌러주세요">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="outlined" @click="setMarker" v-bind="props">마커 로딩</v-btn>
+          </template>
+        </v-tooltip>
       </div>
 
       <v-divider></v-divider>
@@ -299,6 +302,7 @@ const selectMapItem = (item) => {
           <v-btn>플래너 검색</v-btn>
         </v-btn-toggle>
       </div>
+
       <v-divider></v-divider>
       <div v-if="searchBoxToggle" class="search-layout">
         <template v-if="toggle == 0">
@@ -374,25 +378,12 @@ const selectMapItem = (item) => {
         </div>
       </div>
       <div v-if="!searchBoxToggle" class="searchBoxToggleBtn">
-        <v-btn
-          class="toggle-btn-layout"
-          variant="outlined"
-          @click="searchBoxToggleEvent"
-        >
+        <v-btn class="toggle-btn-layout" variant="outlined" @click="searchBoxToggleEvent">
           <i
             class="mdi-chevron-down mdi v-icon notranslate v-theme--light v-icon--size-default"
           ></i>
         </v-btn>
       </div>
-      <!-- "contentTypeId": 12,
-            "title": "대구두류공원",
-            "addr1": "대구광역시 달서구 공원순환로 36",
-            "firstImage": "http://tong.visitkorea.or.kr/cms/resource/29/2370129_image2_1.jpg",
-            "sidoCode": 0,
-            "gugunCode": 0,
-            "latitude": 35.85001055,
-            "longitude": 128.5637105,
-            "searchWord": null -->
       <div class="result-layout">
         <div class="data-layout">
           <template v-if="toggle == 0">
@@ -416,10 +407,7 @@ const selectMapItem = (item) => {
               :items="searchPlanResult"
             >
               <template v-slot:default="{ item }">
-                <v-card
-                  :title="item.title"
-                  @click="selectPlanOne(item.plannerId)"
-                >
+                <v-card :title="item.title" @click="selectPlanOne(item.plannerId)">
                   <div>제목 : {{ item.plannerTitle }}</div>
                   <div>
                     기간 :
@@ -464,33 +452,30 @@ const selectMapItem = (item) => {
     >
       <v-list-item nav>
         <template v-slot:append>
-          <v-btn
-            variant="text"
-            icon="mdi-chevron-left"
-            @click.stop="rail = !rail"
-          ></v-btn>
+          <v-btn variant="text" icon="mdi-chevron-left" @click.stop="rail = !rail"></v-btn>
         </template>
       </v-list-item>
 
       <v-divider></v-divider>
 
-      <v-list density="compact" nav>
-        <v-list-item
-          prepend-icon="mdi-home-city"
-          title="Home"
-          value="home"
-        ></v-list-item>
-        <v-list-item
-          prepend-icon="mdi-account"
-          title="My Account"
-          value="account"
-        ></v-list-item>
-        <v-list-item
-          prepend-icon="mdi-account-group-outline"
-          title="Users"
-          value="users"
-        ></v-list-item>
-      </v-list>
+      <div class="right-sidebar-layout">
+        <div class="right-inner-layout">
+          <template v-if="isLogin">
+            <div class="right-header">
+              <v-select
+                label="cate"
+                v-model="curSelectedCate"
+                :items="selectList"
+                item-title="name"
+                item-value="value"
+                return-object
+                variant="underlined"
+              ></v-select>
+            </div>
+            <v-divider></v-divider>
+          </template>
+        </div>
+      </div>
     </v-navigation-drawer>
     <v-main style="height: 250px"> </v-main>
     <!-- 오른쪽 사이드바 영역 끝 -->
@@ -566,5 +551,13 @@ const selectMapItem = (item) => {
 }
 .toggle-btn-layout > button {
   width: 100%;
+}
+.right-sidebar-layout {
+  width: 100%;
+  height: 100%;
+}
+right-inner-layout {
+  width: 80%;
+  height: 100%;
 }
 </style>
