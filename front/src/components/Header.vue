@@ -39,7 +39,7 @@ const logoutEvent = () => {
   }
   const userId = store.decodedToken(localStorage.accessToken);
   axios
-    .get(`${URL[3]}/user/logout/${userId}`)
+    .get(`${URL[2]}/user/logout/${userId}`)
     .then((res) => {
       if (res.status === 200) {
         mStore.changeMenuState(true);

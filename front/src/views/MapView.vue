@@ -97,7 +97,7 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      axios.get(`${URL[3]}/attr/${sidoCode}/gugun`).then((res) => {
+      axios.get(`${URL[2]}/attr/${sidoCode}/gugun`).then((res) => {
         gugunList.value = res.data.resultData;
       });
     }
@@ -106,7 +106,15 @@ watch(
 
 watch(
   () => route.query,
-  async ({ type, sidoCode, gugunCode, contentTypeId, word, startDate, endDate }) => {
+  async ({
+    type,
+    sidoCode,
+    gugunCode,
+    contentTypeId,
+    word,
+    startDate,
+    endDate,
+  }) => {
     console.log("여기로 들어오나요?");
     if (type == 0) {
       let obj = {
@@ -115,11 +123,15 @@ watch(
         contentTypeId: parseInt(contentTypeId),
         searchWord: word,
       };
-      const res = await axios.post(`${URL[3]}/attr/search`, JSON.stringify(obj), {
-        headers: {
-          "Content-type": "application/json",
-        },
-      });
+      const res = await axios.post(
+        `${URL[2]}/attr/search`,
+        JSON.stringify(obj),
+        {
+          headers: {
+            "Content-type": "application/json",
+          },
+        }
+      );
       searchAttrResult.value = res.data.resultData;
       selectedContentType.value = {
         contentName: "관광지",
@@ -140,28 +152,172 @@ watch(
         startDate: toStringByFormatting(new Date(startDate)),
         endDate: toStringByFormatting(new Date(endDate)),
       };
-      const res = await axios.post(`${URL[3]}/plan/search`, JSON.stringify(obj), {
-        headers: {
-          "Content-type": "application/json",
-        },
-      });
+      const res = await axios.post(
+        `${URL[2]}/plan/search`,
+        JSON.stringify(obj),
+        {
+          headers: {
+            "Content-type": "application/json",
+          },
+        }
+      );
       searchPlanResult.value = res.data.resultData;
     }
   }
 );
 
+const myPlanList = ref([]);
+const curSelectedMyPlan = ref({
+  startDate: "",
+  endDate: "",
+  plannerTitle: "",
+  plannerId: 0,
+  attractionDto: [],
+});
+
+const startDateInput = ref("");
+const endDateInput = ref("");
+const plannerTitleInput = ref("");
+
+const selectedPlanItems = ref([]);
+
+watch(curSelectedMyPlan, (newValue) => {
+  if (newValue.plannerId != 0) {
+    selectList.value = newValue.attractionDto;
+    let newPlanItems = [];
+    newValue.attractionDto.map((plannerItem, idx) => {
+      newPlanItems.push({
+        ...plannerItem,
+        idx,
+      });
+    });
+    startDateInput.value = curSelectedMyPlan.value.startDate;
+    endDateInput.value = curSelectedMyPlan.value.endDate;
+    plannerTitleInput.value = curSelectedMyPlan.value.plannerTitle;
+    selectedPlanItems.value = newPlanItems;
+  }
+});
+
+watch(selectedPlanItems, (newValue) => {
+  selectList.value = newValue;
+});
+
+const removePlannerItem = (idx) => {
+  selectedPlanItems.value = selectedPlanItems.value.filter((item) => {
+    return item.idx != idx;
+  });
+};
+
+const savePlan = async () => {
+  if (curSelectedMyPlan.value.plannerId == 0) {
+    alert("적어도 하나 이상의 plan을 선택 해 주세요");
+    return false;
+  }
+
+  if (
+    new Date(startDateInput.value).getMilliseconds() >
+    new Date(endDateInput.value).getMilliseconds()
+  ) {
+    alert("시작 날짜는 끝 날짜보다 더 클수 없습니다.");
+    return false;
+  }
+
+  if (selectedPlanItems.value.length == 0) {
+    alert("플래너에 선택된 장소는 적어도 하나 이상이어야 합니다.");
+    return false;
+  }
+
+  let obj = {
+    plannerTitle: plannerTitleInput.value,
+    startDate: toStringByFormatting(new Date(startDateInput.value)),
+    endDate: toStringByFormatting(new Date(endDateInput.value)),
+    plannerItems: selectedPlanItems,
+  };
+  await axios.put(
+    `${URL[2]}/plan/${curSelectedMyPlan.value.plannerId}`,
+    JSON.stringify(obj),
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  await refreshPlan();
+};
+
+const removePlan = async () => {
+  if (confirm("해당 계획을 정말 삭제하시겠습니까?")) {
+    await axios.delete(`${URL[2]}/plan/${curSelectedMyPlan.value.plannerId}`);
+  }
+
+  await refreshPlan();
+};
+
+const refreshPlan = async () => {
+  if (
+    confirm(
+      "지금까지 수정한 사항에 대해서 날라갈 수도 있습니다. 초기화 하겠습니까?"
+    )
+  ) {
+    const res = await axios.get(`${URL[2]}/plan/${userId}`);
+    myPlanList = res.data.resultData;
+  }
+};
+
+const planToggle = ref(0);
+
+watch(planToggle, async (newPlanToggleFlg, oldPlanToggleFlg) => {
+  if (newPlanToggleFlg == 0) {
+    await refreshPlan();
+  }
+});
+
+const addedPlanStartDate = ref("");
+const addedPlanEndDate = ref("");
+const addedPlanTitle = ref("");
+const addedPlanItems = ref([]);
+
+const saveAddedPlan = async () => {
+  let obj = {
+    userId: userId.value,
+    startDate: toStringByFormatting(new Date(addedPlanStartDate.value)),
+    endDate: toStringByFormatting(new Date(addedPlanEndDate.value)),
+    plannerTitle: addedPlanTitle.value,
+    plannerItems: addedPlanItems.value,
+  };
+  await axios.post(`${URL[2]}/plan`, JSON.stringify(obj), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+const removeAddedPlanItems = (idx) => {
+  addedPlanItems.value = addedPlanItems.value.filter((item) => {
+    return item.idx != idx;
+  });
+};
+
 onMounted(async () => {
-  // dumy data
+  // init
   const res = await store.getUserId();
   userId.value = res;
   console.log(userId.value);
   contentTypeList.value = ContentTypeId;
   selectedContentType.value = { contentName: "관광지", contentTypeId: 12 };
-  axios.get(`${URL[3]}/attr/sido`).then((res) => {
+  axios.get(`${URL[2]}/attr/sido`).then((res) => {
     sidoList.value = res.data.resultData;
   });
-  const { type, sidoCode, gugunCode, contentTypeId, word, startDate, endDate, plannerId } =
-    route.query;
+  const {
+    type,
+    sidoCode,
+    gugunCode,
+    contentTypeId,
+    word,
+    startDate,
+    endDate,
+    plannerId,
+  } = route.query;
   let obj = {};
   toggle.value = type;
   if (type == 0) {
@@ -171,7 +327,7 @@ onMounted(async () => {
       contentTypeId,
       searchWord: word,
     };
-    const res = await axios.post(`${URL[3]}/attr/search`, JSON.stringify(obj), {
+    const res = await axios.post(`${URL[2]}/attr/search`, JSON.stringify(obj), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -180,12 +336,15 @@ onMounted(async () => {
 
     console.log(searchAttrResult.value);
   } else if (type == 1 && plannerId) {
-    const res = await axios.get(`${URL[3]}/plan/${plannerId}`);
+    const res = await axios.get(`${URL[2]}/plan/${plannerId}`);
     searchPlanResult.value = [res.data.resultData];
     selectedPlannerId.value = plannerId;
   }
 
   if (userId.value) {
+    const res = await axios.get(`${URL[2]}/plan/user/${userId.value}`);
+    myPlanList.value = res.data.resultData;
+    console.log(myPlanList.value);
   }
 });
 
@@ -230,7 +389,10 @@ const submitPlannerEvent = () => {
     alert("시작 일과 끝 일은 필수 선택입니다.");
     return false;
   }
-  if (new Date(startDate.value).getMilliseconds() > new Date(endDate.value).getMilliseconds()) {
+  if (
+    new Date(startDate.value).getMilliseconds() >
+    new Date(endDate.value).getMilliseconds()
+  ) {
     alert("시작일 또는 끝 일이 잘못 선택되었습니다.");
     return false;
   }
@@ -246,8 +408,11 @@ const submitPlannerEvent = () => {
 };
 
 const getPlanItems = async () => {
-  const res = await axios.get(`${URL[1]}/plan/${selectedPlannerId.value}/items`);
-  planItems.value = res.data.resultData;
+  const res = await axios.get(
+    `${URL[2]}/plan/${selectedPlannerId.value}/items`
+  );
+  planItems.value = res.data.resultData.attractionDto;
+  selectList.value = res.data.resultData.attractionDto;
 };
 
 watch(selectedPlannerId, (newValue) => {
@@ -255,7 +420,7 @@ watch(selectedPlannerId, (newValue) => {
 });
 
 watch(planItems, (newValue) => {
-  presentList.value = newValue;
+  selectList.value = newValue;
   planItems.value = newValue;
 });
 
@@ -277,20 +442,78 @@ const markerFlag = ref(false);
 const setMarker = () => {
   markerFlag.value = true;
 };
+
+const markSearch = () => {
+  if (toggle.value == 0) {
+    selectList.value = searchAttrResult.value;
+  } else {
+    selectList.value = planItems.value;
+  }
+};
+
+const markPlan = () => {
+  if (planToggle == 0) {
+    selectList.value = selectedPlanItems.value;
+  } else if (planToggle == 1) {
+    selectList.value = addedPlanItems.value;
+  }
+};
+
+const addPlanItem = (item) => {
+  if (planToggle.value == 0) {
+    let obj = [];
+    if (selectedPlanItems.value.length == 0) {
+      obj.push({
+        ...item,
+        idx: 0,
+      });
+    } else {
+      obj = [...selectedPlanItems.value];
+      let lastidx = obj[obj.length - 1].idx;
+      obj.push({
+        ...item,
+        idx: lastidx + 1,
+      });
+    }
+    selectedPlanItems.value = obj;
+  } else {
+    let obj = [];
+    if (addedPlanItems.value.length == 0) {
+      obj.push({
+        ...item,
+        idx: 0,
+      });
+    } else {
+      obj = [...addedPlanItems.value];
+      let lastidx = obj[obj.length - 1].idx;
+      obj.push({
+        ...item,
+        idx: lastidx + 1,
+      });
+    }
+    addedPlanItemsv.value = obj;
+  }
+};
 </script>
 
 <template>
-  <VKakaoMap :selectOne="selectOne" :selectList="selectList" :isSetMarker="markerFlag"></VKakaoMap>
+  <VKakaoMap
+    :selectOne="selectOne"
+    :selectList="selectList"
+    :isSetMarker="markerFlag"
+  ></VKakaoMap>
   <v-layout>
     <!-- 왼쪽 사이드바 영역 시작 -->
     <v-navigation-drawer permanent :width="400" class="layout">
       <div class="header-layout">
-        <v-btn variant="outlined" @click="$router.go(-1)"> 뒤로가기 </v-btn>
+        <v-btn variant="outlined" @click="markSearch"> 검색결과마킹 </v-btn>
         <v-btn variant="outlined" @click="goBoard"> 게시판 </v-btn>
         <v-btn variant="outlined" @click="goHome"> 홈으로 </v-btn>
         <v-tooltip text="검색결과가 반영이 안될때 눌러주세요">
           <template v-slot:activator="{ props }">
-            <v-btn variant="outlined" @click="setMarker" v-bind="props">마커 로딩</v-btn>
+            <v-btn variant="outlined" @click="setMarker" v-bind="props"
+              >마커 로딩</v-btn
+            >
           </template>
         </v-tooltip>
       </div>
@@ -378,7 +601,11 @@ const setMarker = () => {
         </div>
       </div>
       <div v-if="!searchBoxToggle" class="searchBoxToggleBtn">
-        <v-btn class="toggle-btn-layout" variant="outlined" @click="searchBoxToggleEvent">
+        <v-btn
+          class="toggle-btn-layout"
+          variant="outlined"
+          @click="searchBoxToggleEvent"
+        >
           <i
             class="mdi-chevron-down mdi v-icon notranslate v-theme--light v-icon--size-default"
           ></i>
@@ -407,7 +634,10 @@ const setMarker = () => {
               :items="searchPlanResult"
             >
               <template v-slot:default="{ item }">
-                <v-card :title="item.title" @click="selectPlanOne(item.plannerId)">
+                <v-card
+                  :title="item.title"
+                  @click="selectPlanOne(item.plannerId)"
+                >
                   <div>제목 : {{ item.plannerTitle }}</div>
                   <div>
                     기간 :
@@ -421,9 +651,9 @@ const setMarker = () => {
             <v-virtual-scroll :height="250" :items="planItems">
               <template v-slot:default="{ item }">
                 <v-card :title="item.title" @click="selectMapItem(item)">
-                  <div>{{ contentType[item.contentTypId] }}</div>
                   <div>{{ item.title }}</div>
                   <div>{{ item.addr1 }}</div>
+                  <v-button v-if="isLogin" @click="addPlanItem">담기</v-button>
                 </v-card>
               </template>
             </v-virtual-scroll>
@@ -452,7 +682,11 @@ const setMarker = () => {
     >
       <v-list-item nav>
         <template v-slot:append>
-          <v-btn variant="text" icon="mdi-chevron-left" @click.stop="rail = !rail"></v-btn>
+          <v-btn
+            variant="text"
+            icon="mdi-chevron-left"
+            @click.stop="rail = !rail"
+          ></v-btn>
         </template>
       </v-list-item>
 
@@ -461,18 +695,94 @@ const setMarker = () => {
       <div class="right-sidebar-layout">
         <div class="right-inner-layout">
           <template v-if="isLogin">
-            <div class="right-header">
-              <v-select
-                label="cate"
-                v-model="curSelectedCate"
-                :items="selectList"
-                item-title="name"
-                item-value="value"
-                return-object
-                variant="underlined"
-              ></v-select>
-            </div>
+            <div>My Planner</div>
             <v-divider></v-divider>
+            <div class="right-header">
+              <div class="toggle-box">
+                <v-btn-toggle v-model="planToggle" divided>
+                  <v-btn>나의 플랜 확인</v-btn>
+                  <v-btn>플랜 +</v-btn>
+                </v-btn-toggle>
+              </div>
+              <div>
+                <v-button @click="markPlan">플랜 마킹</v-button>
+                <template v-if="planToggle == 0">
+                  <v-select
+                    label="내 플래너"
+                    v-model="curSelectedMyPlan"
+                    :items="myPlanList"
+                    item-title="plannerTitle"
+                    item-value="plannerId"
+                    return-object
+                    variant="underlined"
+                  ></v-select>
+                  <v-text-field
+                    clearable
+                    label="플래너 제목"
+                    variant="outlined"
+                    v-model="plannerTitleInput"
+                  ></v-text-field>
+                  <input type="date" v-model="startDateInput" />
+                  <input type="date" v-model="endDateInput" />
+                  <v-virtual-scroll :height="250" :items="selectedPlanItems">
+                    <template v-slot:default="{ item }">
+                      <v-card :title="item.title" @click="selectMapItem(item)">
+                        <div class="plannerItem-layout">
+                          <div class="plannerItem-body">
+                            <div>{{ contentType[item.contentTypeId] }}</div>
+                            <div>{{ item.title }}</div>
+                            <div>{{ item.addr1 }}</div>
+                          </div>
+                          <div class="plannerItem-utilbox">
+                            <v-button @click="removePlannerItem(item.idx)"
+                              >제거</v-button
+                            >
+                          </div>
+                        </div>
+                      </v-card>
+                    </template>
+                  </v-virtual-scroll>
+                  <div>
+                    <v-button @click="savePlan">저장</v-button>
+                    <v-button @click="removePlan">삭제</v-button>
+                    <v-button @click="refreshPlan">취소</v-button>
+                  </div>
+                </template>
+                <template v-if="planToggle == 1">
+                  <input type="date" v-model="startDateInput" />
+                  <input type="date" v-model="endDateInput" />
+                  <v-virtual-scroll :height="250" :items="selectedPlanItems">
+                    <template v-slot:default="{ item }">
+                      <v-card :title="item.title" @click="selectMapItem(item)">
+                        <div class="plannerItem-layout">
+                          <div class="plannerItem-body">
+                            <div>{{ contentType[item.contentTypeId] }}</div>
+                            <div>{{ item.title }}</div>
+                            <div>{{ item.addr1 }}</div>
+                          </div>
+                          <div class="plannerItem-utilbox">
+                            <v-button @click="removeAddedPlanItems(item.idx)"
+                              >제거</v-button
+                            >
+                          </div>
+                        </div>
+                      </v-card>
+                    </template>
+                  </v-virtual-scroll>
+                  <div>
+                    <v-button @click="saveAddedPlan">플랜추가</v-button>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+          <template v-if="!isLogin">
+            <div>로그인이 필요한 서비스입니다.</div>
+            <div>
+              <v-button @click="$router.push({ name: 'login' })"
+                >로그인</v-button
+              >
+            </div>
           </template>
         </div>
       </div>
@@ -559,5 +869,23 @@ const setMarker = () => {
 right-inner-layout {
   width: 80%;
   height: 100%;
+}
+.right-header-login-util-Box {
+  display: flex;
+  flex-direction: row;
+}
+
+.plannerItem-layout {
+  display: flex;
+  flex-direction: column;
+}
+.plannerItem-body {
+  display: flex;
+  flex-direction: column;
+}
+.plannerItem-utilbox {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 }
 </style>
