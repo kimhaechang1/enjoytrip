@@ -97,7 +97,7 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      axios.get(`${URL[2]}/attr/${sidoCode}/gugun`).then((res) => {
+      axios.get(`${URL[1]}/attr/${sidoCode}/gugun`).then((res) => {
         gugunList.value = res.data.resultData;
       });
     }
@@ -106,15 +106,7 @@ watch(
 
 watch(
   () => route.query,
-  async ({
-    type,
-    sidoCode,
-    gugunCode,
-    contentTypeId,
-    word,
-    startDate,
-    endDate,
-  }) => {
+  async ({ type, sidoCode, gugunCode, contentTypeId, word, startDate, endDate }) => {
     console.log("여기로 들어오나요?");
     if (type == 0) {
       let obj = {
@@ -123,15 +115,11 @@ watch(
         contentTypeId: parseInt(contentTypeId),
         searchWord: word,
       };
-      const res = await axios.post(
-        `${URL[2]}/attr/search`,
-        JSON.stringify(obj),
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      );
+      const res = await axios.post(`${URL[1]}/attr/search`, JSON.stringify(obj), {
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
       searchAttrResult.value = res.data.resultData;
       selectedContentType.value = {
         contentName: "관광지",
@@ -152,15 +140,11 @@ watch(
         startDate: toStringByFormatting(new Date(startDate)),
         endDate: toStringByFormatting(new Date(endDate)),
       };
-      const res = await axios.post(
-        `${URL[2]}/plan/search`,
-        JSON.stringify(obj),
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      );
+      const res = await axios.post(`${URL[1]}/plan/search`, JSON.stringify(obj), {
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
       searchPlanResult.value = res.data.resultData;
     }
   }
@@ -233,33 +217,25 @@ const savePlan = async () => {
     endDate: toStringByFormatting(new Date(endDateInput.value)),
     plannerItems: selectedPlanItems,
   };
-  await axios.put(
-    `${URL[2]}/plan/${curSelectedMyPlan.value.plannerId}`,
-    JSON.stringify(obj),
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  await axios.put(`${URL[1]}/plan/${curSelectedMyPlan.value.plannerId}`, JSON.stringify(obj), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
   await refreshPlan();
 };
 
 const removePlan = async () => {
   if (confirm("해당 계획을 정말 삭제하시겠습니까?")) {
-    await axios.delete(`${URL[2]}/plan/${curSelectedMyPlan.value.plannerId}`);
+    await axios.delete(`${URL[1]}/plan/${curSelectedMyPlan.value.plannerId}`);
   }
 
   await refreshPlan();
 };
 
 const refreshPlan = async () => {
-  if (
-    confirm(
-      "지금까지 수정한 사항에 대해서 날라갈 수도 있습니다. 초기화 하겠습니까?"
-    )
-  ) {
-    const res = await axios.get(`${URL[2]}/plan/${userId}`);
+  if (confirm("지금까지 수정한 사항에 대해서 날라갈 수도 있습니다. 초기화 하겠습니까?")) {
+    const res = await axios.get(`${URL[1]}/plan/${userId}`);
     myPlanList = res.data.resultData;
   }
 };
@@ -285,7 +261,7 @@ const saveAddedPlan = async () => {
     plannerTitle: addedPlanTitle.value,
     plannerItems: addedPlanItems.value,
   };
-  await axios.post(`${URL[2]}/plan`, JSON.stringify(obj), {
+  await axios.post(`${URL[1]}/plan`, JSON.stringify(obj), {
     headers: {
       "Content-Type": "application/json",
     },
@@ -305,19 +281,11 @@ onMounted(async () => {
   console.log(userId.value);
   contentTypeList.value = ContentTypeId;
   selectedContentType.value = { contentName: "관광지", contentTypeId: 12 };
-  axios.get(`${URL[2]}/attr/sido`).then((res) => {
+  axios.get(`${URL[1]}/attr/sido`).then((res) => {
     sidoList.value = res.data.resultData;
   });
-  const {
-    type,
-    sidoCode,
-    gugunCode,
-    contentTypeId,
-    word,
-    startDate,
-    endDate,
-    plannerId,
-  } = route.query;
+  const { type, sidoCode, gugunCode, contentTypeId, word, startDate, endDate, plannerId } =
+    route.query;
   let obj = {};
   toggle.value = type;
   if (type == 0) {
@@ -327,7 +295,7 @@ onMounted(async () => {
       contentTypeId,
       searchWord: word,
     };
-    const res = await axios.post(`${URL[2]}/attr/search`, JSON.stringify(obj), {
+    const res = await axios.post(`${URL[1]}/attr/search`, JSON.stringify(obj), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -336,13 +304,13 @@ onMounted(async () => {
 
     console.log(searchAttrResult.value);
   } else if (type == 1 && plannerId) {
-    const res = await axios.get(`${URL[2]}/plan/${plannerId}`);
+    const res = await axios.get(`${URL[1]}/plan/${plannerId}`);
     searchPlanResult.value = [res.data.resultData];
     selectedPlannerId.value = plannerId;
   }
 
   if (userId.value) {
-    const res = await axios.get(`${URL[2]}/plan/user/${userId.value}`);
+    const res = await axios.get(`${URL[1]}/plan/user/${userId.value}`);
     myPlanList.value = res.data.resultData;
     console.log(myPlanList.value);
   }
@@ -389,10 +357,7 @@ const submitPlannerEvent = () => {
     alert("시작 일과 끝 일은 필수 선택입니다.");
     return false;
   }
-  if (
-    new Date(startDate.value).getMilliseconds() >
-    new Date(endDate.value).getMilliseconds()
-  ) {
+  if (new Date(startDate.value).getMilliseconds() > new Date(endDate.value).getMilliseconds()) {
     alert("시작일 또는 끝 일이 잘못 선택되었습니다.");
     return false;
   }
@@ -408,9 +373,7 @@ const submitPlannerEvent = () => {
 };
 
 const getPlanItems = async () => {
-  const res = await axios.get(
-    `${URL[2]}/plan/${selectedPlannerId.value}/items`
-  );
+  const res = await axios.get(`${URL[1]}/plan/${selectedPlannerId.value}/items`);
   planItems.value = res.data.resultData.attractionDto;
   selectList.value = res.data.resultData.attractionDto;
 };
@@ -491,7 +454,7 @@ const addPlanItem = (item) => {
         idx: lastidx + 1,
       });
     }
-    addedPlanItemsv.value = obj;
+    addedPlanItems.value = obj;
   }
 };
 </script>
@@ -501,6 +464,8 @@ const addPlanItem = (item) => {
     :selectOne="selectOne"
     :selectList="selectList"
     :isSetMarker="markerFlag"
+    :isLogin="isLogin"
+    @get-item="addPlanItem"
   ></VKakaoMap>
   <v-layout>
     <!-- 왼쪽 사이드바 영역 시작 -->
@@ -511,9 +476,7 @@ const addPlanItem = (item) => {
         <v-btn variant="outlined" @click="goHome"> 홈으로 </v-btn>
         <v-tooltip text="검색결과가 반영이 안될때 눌러주세요">
           <template v-slot:activator="{ props }">
-            <v-btn variant="outlined" @click="setMarker" v-bind="props"
-              >마커 로딩</v-btn
-            >
+            <v-btn variant="outlined" @click="setMarker" v-bind="props">마커 로딩</v-btn>
           </template>
         </v-tooltip>
       </div>
@@ -601,11 +564,7 @@ const addPlanItem = (item) => {
         </div>
       </div>
       <div v-if="!searchBoxToggle" class="searchBoxToggleBtn">
-        <v-btn
-          class="toggle-btn-layout"
-          variant="outlined"
-          @click="searchBoxToggleEvent"
-        >
+        <v-btn class="toggle-btn-layout" variant="outlined" @click="searchBoxToggleEvent">
           <i
             class="mdi-chevron-down mdi v-icon notranslate v-theme--light v-icon--size-default"
           ></i>
@@ -622,7 +581,7 @@ const addPlanItem = (item) => {
               <template v-slot:default="{ item }">
                 <v-card :title="item.title" @click="selectMapItem(item)">
                   <div>주소 : {{ item.addr1 }}</div>
-                  <div><img :src="item.addr1" width="80" height="80" /></div>
+                  <div><img :src="item.firstImage" width="80" height="80" /></div>
                 </v-card>
               </template>
             </v-virtual-scroll>
@@ -634,10 +593,7 @@ const addPlanItem = (item) => {
               :items="searchPlanResult"
             >
               <template v-slot:default="{ item }">
-                <v-card
-                  :title="item.title"
-                  @click="selectPlanOne(item.plannerId)"
-                >
+                <v-card :title="item.title" @click="selectPlanOne(item.plannerId)">
                   <div>제목 : {{ item.plannerTitle }}</div>
                   <div>
                     기간 :
@@ -672,8 +628,9 @@ const addPlanItem = (item) => {
     <!-- 왼쪽 사이드바 영역 끝 -->
 
     <!-- 오른쪽 사이드바 영역 시작 -->
+    <!-- 구현 미완이라 주석처리 -->
     <!-- 넓이 수정방법 = :width="" -->
-    <v-navigation-drawer
+    <!-- <v-navigation-drawer
       v-model="drawer"
       :rail="rail"
       permanent
@@ -682,11 +639,7 @@ const addPlanItem = (item) => {
     >
       <v-list-item nav>
         <template v-slot:append>
-          <v-btn
-            variant="text"
-            icon="mdi-chevron-left"
-            @click.stop="rail = !rail"
-          ></v-btn>
+          <v-btn variant="text" icon="mdi-chevron-left" @click.stop="rail = !rail"></v-btn>
         </template>
       </v-list-item>
 
@@ -734,9 +687,7 @@ const addPlanItem = (item) => {
                             <div>{{ item.addr1 }}</div>
                           </div>
                           <div class="plannerItem-utilbox">
-                            <v-button @click="removePlannerItem(item.idx)"
-                              >제거</v-button
-                            >
+                            <v-button @click="removePlannerItem(item.idx)">제거</v-button>
                           </div>
                         </div>
                       </v-card>
@@ -761,9 +712,7 @@ const addPlanItem = (item) => {
                             <div>{{ item.addr1 }}</div>
                           </div>
                           <div class="plannerItem-utilbox">
-                            <v-button @click="removeAddedPlanItems(item.idx)"
-                              >제거</v-button
-                            >
+                            <v-button @click="removeAddedPlanItems(item.idx)">제거</v-button>
                           </div>
                         </div>
                       </v-card>
@@ -779,14 +728,12 @@ const addPlanItem = (item) => {
           <template v-if="!isLogin">
             <div>로그인이 필요한 서비스입니다.</div>
             <div>
-              <v-button @click="$router.push({ name: 'login' })"
-                >로그인</v-button
-              >
+              <v-button @click="$router.push({ name: 'login' })">로그인</v-button>
             </div>
           </template>
         </div>
       </div>
-    </v-navigation-drawer>
+    </v-navigation-drawer> -->
     <v-main style="height: 250px"> </v-main>
     <!-- 오른쪽 사이드바 영역 끝 -->
   </v-layout>

@@ -10,10 +10,7 @@ export const menuStore = defineStore(
       { name: "회원가입", show: true, routeName: "join" },
       { name: "로그인", show: true, routeName: "login" },
     ];
-    const login = [
-      { name: "내정보", show: true, routeName: "mypage" },
-      { name: "로그아웃", show: true, routeName: "logout" },
-    ];
+    const login = [{ name: "로그아웃", show: true, routeName: "logout" }];
 
     const changeMenuState = (isLogin) => {
       if (isLogin) {

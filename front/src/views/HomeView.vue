@@ -26,7 +26,7 @@ watch(
     };
     if (sidoCode != 0) {
       gugunList.value = gugunData.value[sidoCode];
-      axios.get(`${URL[2]}/attr/${sidoCode}/gugun`).then((res) => {
+      axios.get(`${URL[1]}/attr/${sidoCode}/gugun`).then((res) => {
         gugunList.value = res.data.resultData;
       });
     }
@@ -57,26 +57,21 @@ onMounted(() => {
   contentTypeList.value = ContentTypeId;
   selectedContentType.value = { contentName: "관광지", contentTypeId: 12 };
 
-  axios.get(`${URL[2]}/attr/sido`).then((res) => {
+  axios.get(`${URL[1]}/attr/sido`).then((res) => {
     sidoList.value = res.data.resultData;
   });
 
-  axios.get(`${URL[2]}/attr/count`).then((res) => {
+  axios.get(`${URL[1]}/attr/count`).then((res) => {
     attrCount.value = parseInt(res.data.resultData);
   });
 
-  axios.get(`${URL[2]}/plan/count`).then((res) => {
+  axios.get(`${URL[1]}/plan/count`).then((res) => {
     planCount.value = parseInt(res.data.resultData);
   });
 
-  axios.get(`${URL[2]}/board/count`).then((res) => {
+  axios.get(`${URL[1]}/board/count`).then((res) => {
     boardCount.value = parseInt(res.data.resultData);
   });
-
-  // axios.get(`${URL[3]}/search/rank`)
-  // .then((res)=>{
-  //   searchRank.value = res.data.resultData
-  // })
 });
 
 const submitEvent = () => {
@@ -143,12 +138,7 @@ const goBoardEvent = () => {
             return-object
             variant="outlined"
           ></v-select>
-          <v-text-field
-            clearable
-            label="검색어"
-            variant="outlined"
-            v-model="word"
-          ></v-text-field>
+          <v-text-field clearable label="검색어" variant="outlined" v-model="word"></v-text-field>
           <button class="submit-btn" @click="submitEvent">검색</button>
         </div>
       </div>
@@ -163,7 +153,11 @@ const goBoardEvent = () => {
         <div class="carditem">
           <div class="carditem-title">
             전체 관광지 수
-            <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square" />
+            <font-awesome-icon
+              icon="fa-solid fa-arrow-up-right-from-square"
+              style="cursor: pointer"
+              @click="$router.push({ name: 'map', query: { type: 0 } })"
+            />
           </div>
           <div class="carditem-body">
             <vue3-autocounter
@@ -216,16 +210,6 @@ const goBoardEvent = () => {
               separator=","
               :autoinit="true"
             />
-          </div>
-        </div>
-        <div class="carditem">
-          <div class="carditem-title">지금 핫한 TOP 5</div>
-          <div class="carditem-body">
-            <div>1. 강원도 정선</div>
-            <div>2. 강원도 정선</div>
-            <div>3. 강원도 정선</div>
-            <div>4. 강원도 정선</div>
-            <div>5. 강원도 정선</div>
           </div>
         </div>
       </div>

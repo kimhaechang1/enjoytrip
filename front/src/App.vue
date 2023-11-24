@@ -76,3 +76,12 @@ body {
   cursor: pointer;
 }
 </style>
+<style>
+@font-face {
+  font-family: "customFont";
+  src: url("./components/font.ttf");
+}
+* {
+  font-family: "customFont";
+}
+</style>

@@ -8,7 +8,13 @@ const markers = ref([]);
 const overlays = ref([]);
 
 // const props = defineProps({ presentList: Array, selectedMapItem: Object });
-const props = defineProps({ selectOne: Object, selectList: Array, isSetMarker: Boolean });
+const props = defineProps({
+  selectOne: Object,
+  selectList: Array,
+  isSetMarker: Boolean,
+  isLogin: Boolean,
+});
+const emit = defineEmits(["getItem"]);
 watch(
   () => props.selectOne,
   () => {
@@ -139,6 +145,12 @@ const reloadMarkersAndOverlays = () => {
     const desc = document.createElement("div");
     desc.setAttribute("class", "desc");
     desc.innerText = props.selectList[idx].addr1;
+    const getBtn = document.createElement("button");
+    getBtn.addEventListener("click", () => {
+      emit("getItem", props.selectList[idx]);
+    });
+    getBtn.innerHTML = "담기";
+    desc.appendChild(getBtn);
     // const ellipsis = document.createElement("div");
     // ellipsis.setAttribute("class", "ellipsis");
     // ellipsis.innerText = props.selectList[idx].addr1;
